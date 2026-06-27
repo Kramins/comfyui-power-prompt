@@ -368,6 +368,10 @@ function createYamlEditor(parent, initialYaml) {
         ],
     });
 
+    // Notify CodeMirror when the host container is resized (e.g. node drag-resize).
+    // Without this CM keeps its initial height even as the flex parent grows.
+    new ResizeObserver(() => view.requestMeasure()).observe(editorDiv);
+
     return {
         toString: () => view.state.doc.toString(),
         updateCode: (text) => view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } }),

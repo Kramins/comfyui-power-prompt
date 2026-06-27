@@ -224,6 +224,13 @@ class PowerPromptNode:
             else:
                 raise ValueError(f"Unknown variable type '{var_type}' for '{var_name}'.")
 
+        # Expose _tags lists to Jinja2 templates (fragments and prompt).
+        # eval_context holds tags for when/unless filtering; context is the
+        # template render context — without this, _tags are unreachable in fragments.
+        for k, v in eval_context.items():
+            if k.endswith("_tags"):
+                context[k] = v
+
         # Collect fragments from includes, then let the main doc override.
         all_fragments = _merge_include_fragments(includes)
         main_fragments = doc.get("fragments", {})
