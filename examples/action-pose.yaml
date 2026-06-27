@@ -1,0 +1,122 @@
+variables:
+
+  shot_type:
+    label: "Shot Type"
+    group: "Composition"
+    type: select
+    count: 1
+    options:
+      - value: full body
+        weight: 2
+        tags: [full, shows_legs]
+      - value: cowboy shot
+        weight: 2
+        tags: [upper, shows_legs]
+      - value: upper body
+        weight: 2
+        tags: [upper]
+      - value: portrait
+        tags: [close]
+      - value: close-up
+        tags: [close, face_only]
+      - value: low angle
+        tags: [full, dynamic, low_angle]
+      - value: overhead view
+        tags: [full, dynamic, high_angle]
+
+  pose:
+    label: "Pose"
+    group: "Composition"
+    type: select
+    count: 1
+    options:
+      - value: standing
+        weight: 3
+        tags: [standing, upright]
+      - value: sitting
+        weight: 2
+        tags: [sitting]
+      - value: kneeling
+        tags: [sitting, low]
+        unless: "'face_only' in shot_type_tags"
+      - value: leaning against wall
+        weight: 2
+        tags: [leaning, upright]
+        unless: "'face_only' in shot_type_tags"
+      - value: crouching
+        tags: [low, dynamic]
+        when: "'full' in shot_type_tags or 'shows_legs' in shot_type_tags"
+      - value: lying down
+        tags: [lying]
+        when: "'full' in shot_type_tags"
+      - value: walking
+        weight: 2
+        tags: [moving, upright]
+        unless: "'face_only' in shot_type_tags"
+      - value: running
+        tags: [moving, dynamic]
+        when: "'full' in shot_type_tags or 'shows_legs' in shot_type_tags"
+      - value: mid-jump
+        tags: [airborne, dynamic]
+        when: "'full' in shot_type_tags"
+      - value: looking back over shoulder
+        tags: [turned, upright]
+        unless: "'face_only' in shot_type_tags"
+
+  action:
+    label: "Action"
+    group: "Composition"
+    type: select
+    count: 1
+    options:
+      # universal
+      - value: gazing into the distance
+        weight: 3
+      - value: looking at the camera
+        weight: 3
+      - value: lost in thought
+        weight: 2
+
+      # pose-conditional
+      - value: reading a book
+        weight: 2
+        when: "'sitting' in pose_tags or 'lying' in pose_tags"
+      - value: writing in a notebook
+        when: "'sitting' in pose_tags"
+      - value: hair blowing in the wind
+        weight: 2
+        when: "'upright' in pose_tags or 'moving' in pose_tags"
+      - value: stretching arms above head
+        when: "'standing' in pose_tags"
+      - value: arms outstretched
+        when: "'upright' in pose_tags or 'airborne' in pose_tags"
+      - value: adjusting hair
+        weight: 2
+        when: "'upright' in pose_tags or 'sitting' in pose_tags"
+      - value: looking down at hands
+        when: "'sitting' in pose_tags or 'kneeling' in pose_tags"
+
+      # archetype-conditional (requires character partial to be connected)
+      - value: studying, surrounded by books
+        when: "'student' in char_archetype_tags and 'sitting' in pose_tags"
+      - value: praying quietly
+        when: "'shrine' in char_archetype_tags"
+      - value: battle stance, weapon drawn
+        when: "'warrior' in char_archetype_tags"
+      - value: casting a spell, glowing hands
+        when: "'magical' in char_archetype_tags"
+      - value: performing for a crowd
+        when: "'performer' in char_archetype_tags"
+
+      # location-conditional (requires location partial to be connected)
+      - value: watching the waves
+        when: "'coastal' in location_type_tags"
+      - value: watching the city lights
+        when: "'city' in location_type_tags and 'elevated' in setting_tags"
+      - value: sitting by a window, watching the rain
+        when: "'indoor' in location_type_tags and 'sitting' in pose_tags"
+      - value: walking through falling leaves
+        when: "'nature' in location_type_tags and 'moving' in pose_tags"
+
+fragments:
+  pose_description: "{{ shot_type }}, {{ pose }}, {{ action }}"

@@ -1,9 +1,167 @@
 {
   "id": "2c6a0bb3-691d-4057-9ab1-f47bc21112a3",
   "revision": 0,
-  "last_node_id": 26,
-  "last_link_id": 38,
+  "last_node_id": 30,
+  "last_link_id": 41,
   "nodes": [
+    {
+      "id": 5,
+      "type": "EmptyLatentImage",
+      "pos": [
+        -385.938651773071,
+        757.2402501062005
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "slot_index": 0,
+          "links": [
+            23
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.25.1",
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        1
+      ]
+    },
+    {
+      "id": 15,
+      "type": "PreviewAny",
+      "pos": [
+        295.12965733868424,
+        92.61430996219744
+      ],
+      "size": [
+        490,
+        238.5
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 19
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            26
+          ]
+        }
+      ],
+      "title": "Positive Prompt",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.25.1",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [
+        null,
+        null,
+        null
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 17,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        296.31902299691353,
+        378.26363059217965
+      ],
+      "size": [
+        482.67277458166495,
+        201.47637291833507
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            27
+          ]
+        }
+      ],
+      "title": "Negative Prompt",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.26.0",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "text, watermark"
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
+      "id": 11,
+      "type": "PreviewAny",
+      "pos": [
+        290.6271122619628,
+        -205.0805951630591
+      ],
+      "size": [
+        490,
+        238.5
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "Positive Raw Prompt",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.25.1",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [
+        null,
+        null,
+        null
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
     {
       "id": 4,
       "type": "CheckpointLoaderSimple",
@@ -16,7 +174,7 @@
         98
       ],
       "flags": {},
-      "order": 0,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -62,96 +220,159 @@
       ]
     },
     {
-      "id": 11,
-      "type": "PreviewAny",
+      "id": 23,
+      "type": "PowerPromptPartial",
       "pos": [
-        290.6271122619628,
-        -205.0805951630591
+        -1460.0592994775498,
+        109.57846894570521
       ],
       "size": [
-        490,
-        238.5
+        680.0610998026127,
+        563.1994147957153
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "partial",
+          "type": "POWER_PROMPT_PARTIAL",
+          "links": [
+            38
+          ]
+        }
+      ],
+      "title": "Location",
+      "properties": {
+        "aux_id": "Kramins/comfyui-power-prompt",
+        "ver": "ae55f4f8d106d7e2b9e01d4a50798f85597450ca",
+        "Node name for S&R": "PowerPromptPartial"
+      },
+      "widgets_values": [
+        "variables:\n\n  location_type:\n    label: \"Location Type\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: urban\n        tags: [outdoor, city]\n      - value: nature\n        tags: [outdoor, nature]\n      - value: coastal\n        tags: [outdoor, nature, coastal]\n      - value: indoor\n        tags: [indoor]\n      - value: fantasy realm\n        tags: [outdoor, fantasy]\n      - value: traditional\n        tags: [outdoor, traditional]\n\n  setting:\n    label: \"Setting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      # urban\n      - value: city street\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: rooftop\n        tags: [urban, elevated]\n        when: \"'city' in location_type_tags\"\n      - value: back alley\n        tags: [urban, narrow]\n        when: \"'city' in location_type_tags\"\n      - value: train station platform\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: shopping arcade\n        tags: [urban, covered]\n        when: \"'city' in location_type_tags\"\n      # nature\n      - value: forest path\n        tags: [nature, enclosed]\n        when: \"'nature' in location_type_tags\"\n      - value: mountain overlook\n        tags: [nature, elevated]\n        when: \"'nature' in location_type_tags\"\n      - value: riverbank\n        tags: [nature, water]\n        when: \"'nature' in location_type_tags\"\n      - value: meadow\n        tags: [nature, open]\n        when: \"'nature' in location_type_tags\"\n      # coastal\n      - value: sandy beach\n        tags: [coastal, open]\n        when: \"'coastal' in location_type_tags\"\n      - value: cliff overlooking the sea\n        tags: [coastal, elevated]\n        when: \"'coastal' in location_type_tags\"\n      - value: seaside pier\n        tags: [coastal, water]\n        when: \"'coastal' in location_type_tags\"\n      # indoor\n      - value: cozy cafe\n        tags: [indoor, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: library\n        tags: [indoor, quiet]\n        when: \"'indoor' in location_type_tags\"\n      - value: bedroom\n        tags: [indoor, intimate]\n        when: \"'indoor' in location_type_tags\"\n      - value: school classroom\n        tags: [indoor, school]\n        when: \"'indoor' in location_type_tags\"\n      - value: cathedral interior\n        tags: [indoor, grand]\n        when: \"'indoor' in location_type_tags\"\n      # fantasy\n      - value: ancient ruins\n        tags: [fantasy, outdoor]\n        when: \"'fantasy' in location_type_tags\"\n      - value: floating island\n        tags: [fantasy, elevated]\n        when: \"'fantasy' in location_type_tags\"\n      - value: enchanted forest\n        tags: [fantasy, nature]\n        when: \"'fantasy' in location_type_tags\"\n      # traditional\n      - value: shrine steps\n        tags: [traditional, elevated]\n        when: \"'traditional' in location_type_tags\"\n      - value: Japanese garden\n        tags: [traditional, nature]\n        when: \"'traditional' in location_type_tags\"\n      - value: bamboo grove\n        tags: [traditional, nature, enclosed]\n        when: \"'traditional' in location_type_tags\"\n\n  season:\n    label: \"Season\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: spring\n        tags: [warm, bright, blooming]\n        weight: 2\n      - value: summer\n        tags: [hot, bright]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: autumn\n        tags: [cool, moody]\n      - value: winter\n        tags: [cold, dark]\n\n  weather:\n    label: \"Weather\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: clear sky\n        tags: [dry, bright]\n        weight: 3\n        unless: \"'indoor' in location_type_tags\"\n      - value: scattered clouds\n        tags: [dry]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: overcast\n        tags: [grey, dry]\n        unless: \"'indoor' in location_type_tags\"\n      - value: light rain\n        tags: [rainy, wet]\n        unless: \"'indoor' in location_type_tags\"\n      - value: heavy rain\n        tags: [rainy, wet, dramatic]\n        unless: \"'indoor' in location_type_tags or season == 'winter'\"\n      - value: snowfall\n        tags: [snowy, cold]\n        when: \"season == 'winter' and 'outdoor' in location_type_tags\"\n      - value: cherry blossoms drifting\n        tags: [dry, magical, blooming]\n        when: \"season == 'spring' and 'outdoor' in location_type_tags\"\n      - value: autumn leaves falling\n        tags: [dry, magical]\n        when: \"season == 'autumn' and 'outdoor' in location_type_tags\"\n      - value: indoor lighting\n        tags: [dry, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: golden mist\n        tags: [dry, magical]\n        when: \"'fantasy' in location_type_tags\"\n\n  time_of_day:\n    label: \"Time of Day\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: dawn\n        tags: [dim, cool_light]\n        unless: \"'indoor' in location_type_tags\"\n      - value: morning\n        tags: [bright, warm_light]\n      - value: afternoon\n        tags: [bright, warm_light]\n      - value: golden hour\n        tags: [warm_light, dramatic]\n        weight: 2\n      - value: dusk\n        tags: [dim, warm_light, dramatic]\n        weight: 2\n      - value: night\n        tags: [dark, cool_light]\n      - value: midnight\n        tags: [dark, cool_light]\n        when: \"'indoor' in location_type_tags or 'fantasy' in location_type_tags\"\n\n  lighting:\n    label: \"Lighting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: soft natural light\n        when: \"'bright' in time_of_day_tags and 'dry' in weather_tags\"\n      - value: harsh midday sun\n        when: \"time_of_day == 'afternoon' and 'hot' in season_tags\"\n      - value: dappled sunlight through leaves\n        when: \"'nature' in setting_tags and 'bright' in time_of_day_tags\"\n      - value: golden hour rays\n        when: \"'warm_light' in time_of_day_tags and 'dramatic' in time_of_day_tags\"\n      - value: overcast diffused light\n        when: \"'grey' in weather_tags\"\n      - value: dramatic storm light\n        when: \"'dramatic' in weather_tags\"\n      - value: moonlight\n        when: \"'dark' in time_of_day_tags and 'outdoor' in location_type_tags\"\n      - value: warm cafe glow\n        when: \"setting == 'cozy cafe'\"\n      - value: candlelight\n        when: \"'indoor' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: neon reflections\n        when: \"'city' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: magical ambient light\n        when: \"'fantasy' in location_type_tags\"\n      - value: lantern light\n        when: \"'traditional' in location_type_tags and 'dark' in time_of_day_tags\"\n\n  location_notes:\n    label: \"Extra Location Notes\"\n    group: \"Location\"\n    type: text\n\nfragments:\n  loc_weather_season: \"{{ season }}{% if 'outdoor' in location_type_tags %}, {{ weather }}{% endif %}\"\n  loc_atmosphere: \"{{ time_of_day }}, {{ lighting }}\"\n  location: \"{{ setting }}, {{ fragment.loc_weather_season }}, {{ fragment.loc_atmosphere }}{% if location_notes %}, {{ location_notes }}{% endif %}\"\n",
+        "variables:\n\n  location_type:\n    label: \"Location Type\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: urban\n        tags: [outdoor, city]\n      - value: nature\n        tags: [outdoor, nature]\n      - value: coastal\n        tags: [outdoor, nature, coastal]\n      - value: indoor\n        tags: [indoor]\n      - value: fantasy realm\n        tags: [outdoor, fantasy]\n      - value: traditional\n        tags: [outdoor, traditional]\n\n  setting:\n    label: \"Setting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      # urban\n      - value: city street\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: rooftop\n        tags: [urban, elevated]\n        when: \"'city' in location_type_tags\"\n      - value: back alley\n        tags: [urban, narrow]\n        when: \"'city' in location_type_tags\"\n      - value: train station platform\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: shopping arcade\n        tags: [urban, covered]\n        when: \"'city' in location_type_tags\"\n      # nature\n      - value: forest path\n        tags: [nature, enclosed]\n        when: \"'nature' in location_type_tags\"\n      - value: mountain overlook\n        tags: [nature, elevated]\n        when: \"'nature' in location_type_tags\"\n      - value: riverbank\n        tags: [nature, water]\n        when: \"'nature' in location_type_tags\"\n      - value: meadow\n        tags: [nature, open]\n        when: \"'nature' in location_type_tags\"\n      # coastal\n      - value: sandy beach\n        tags: [coastal, open]\n        when: \"'coastal' in location_type_tags\"\n      - value: cliff overlooking the sea\n        tags: [coastal, elevated]\n        when: \"'coastal' in location_type_tags\"\n      - value: seaside pier\n        tags: [coastal, water]\n        when: \"'coastal' in location_type_tags\"\n      # indoor\n      - value: cozy cafe\n        tags: [indoor, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: library\n        tags: [indoor, quiet]\n        when: \"'indoor' in location_type_tags\"\n      - value: bedroom\n        tags: [indoor, intimate]\n        when: \"'indoor' in location_type_tags\"\n      - value: school classroom\n        tags: [indoor, school]\n        when: \"'indoor' in location_type_tags\"\n      - value: cathedral interior\n        tags: [indoor, grand]\n        when: \"'indoor' in location_type_tags\"\n      # fantasy\n      - value: ancient ruins\n        tags: [fantasy, outdoor]\n        when: \"'fantasy' in location_type_tags\"\n      - value: floating island\n        tags: [fantasy, elevated]\n        when: \"'fantasy' in location_type_tags\"\n      - value: enchanted forest\n        tags: [fantasy, nature]\n        when: \"'fantasy' in location_type_tags\"\n      # traditional\n      - value: shrine steps\n        tags: [traditional, elevated]\n        when: \"'traditional' in location_type_tags\"\n      - value: Japanese garden\n        tags: [traditional, nature]\n        when: \"'traditional' in location_type_tags\"\n      - value: bamboo grove\n        tags: [traditional, nature, enclosed]\n        when: \"'traditional' in location_type_tags\"\n\n  season:\n    label: \"Season\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: spring\n        tags: [warm, bright, blooming]\n        weight: 2\n      - value: summer\n        tags: [hot, bright]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: autumn\n        tags: [cool, moody]\n      - value: winter\n        tags: [cold, dark]\n\n  weather:\n    label: \"Weather\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: clear sky\n        tags: [dry, bright]\n        weight: 3\n        unless: \"'indoor' in location_type_tags\"\n      - value: scattered clouds\n        tags: [dry]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: overcast\n        tags: [grey, dry]\n        unless: \"'indoor' in location_type_tags\"\n      - value: light rain\n        tags: [rainy, wet]\n        unless: \"'indoor' in location_type_tags\"\n      - value: heavy rain\n        tags: [rainy, wet, dramatic]\n        unless: \"'indoor' in location_type_tags or season == 'winter'\"\n      - value: snowfall\n        tags: [snowy, cold]\n        when: \"season == 'winter' and 'outdoor' in location_type_tags\"\n      - value: cherry blossoms drifting\n        tags: [dry, magical, blooming]\n        when: \"season == 'spring' and 'outdoor' in location_type_tags\"\n      - value: autumn leaves falling\n        tags: [dry, magical]\n        when: \"season == 'autumn' and 'outdoor' in location_type_tags\"\n      - value: indoor lighting\n        tags: [dry, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: golden mist\n        tags: [dry, magical]\n        when: \"'fantasy' in location_type_tags\"\n\n  time_of_day:\n    label: \"Time of Day\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: dawn\n        tags: [dim, cool_light]\n        unless: \"'indoor' in location_type_tags\"\n      - value: morning\n        tags: [bright, warm_light]\n      - value: afternoon\n        tags: [bright, warm_light]\n      - value: golden hour\n        tags: [warm_light, dramatic]\n        weight: 2\n      - value: dusk\n        tags: [dim, warm_light, dramatic]\n        weight: 2\n      - value: night\n        tags: [dark, cool_light]\n      - value: midnight\n        tags: [dark, cool_light]\n        when: \"'indoor' in location_type_tags or 'fantasy' in location_type_tags\"\n\n  lighting:\n    label: \"Lighting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: soft natural light\n        when: \"'bright' in time_of_day_tags and 'dry' in weather_tags\"\n      - value: harsh midday sun\n        when: \"time_of_day == 'afternoon' and 'hot' in season_tags\"\n      - value: dappled sunlight through leaves\n        when: \"'nature' in setting_tags and 'bright' in time_of_day_tags\"\n      - value: golden hour rays\n        when: \"'warm_light' in time_of_day_tags and 'dramatic' in time_of_day_tags\"\n      - value: overcast diffused light\n        when: \"'grey' in weather_tags\"\n      - value: dramatic storm light\n        when: \"'dramatic' in weather_tags\"\n      - value: moonlight\n        when: \"'dark' in time_of_day_tags and 'outdoor' in location_type_tags\"\n      - value: warm cafe glow\n        when: \"setting == 'cozy cafe'\"\n      - value: candlelight\n        when: \"'indoor' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: neon reflections\n        when: \"'city' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: magical ambient light\n        when: \"'fantasy' in location_type_tags\"\n      - value: lantern light\n        when: \"'traditional' in location_type_tags and 'dark' in time_of_day_tags\"\n\n  location_notes:\n    label: \"Extra Location Notes\"\n    group: \"Location\"\n    type: text\n\nfragments:\n  loc_weather_season: \"{{ season }}{% if 'outdoor' in location_type_tags %}, {{ weather }}{% endif %}\"\n  loc_atmosphere: \"{{ time_of_day }}, {{ lighting }}\"\n  location: \"{{ setting }}, {{ fragment.loc_weather_season }}, {{ fragment.loc_atmosphere }}{% if location_notes %}, {{ location_notes }}{% endif %}\"\n"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 14,
+      "type": "PowerPromptNode",
+      "pos": [
+        -544.9685299650648,
+        -511.5138707357722
+      ],
+      "size": [
+        745.9781482182915,
+        1036.3841461124398
       ],
       "flags": {},
       "order": 7,
       "mode": 0,
       "inputs": [
         {
-          "name": "source",
-          "type": "*",
-          "link": 17
+          "name": "include_1",
+          "type": "POWER_PROMPT_PARTIAL",
+          "link": 40
+        },
+        {
+          "name": "include_2",
+          "type": "POWER_PROMPT_PARTIAL",
+          "link": 38
+        },
+        {
+          "name": "include_3",
+          "type": "POWER_PROMPT_PARTIAL",
+          "link": 41
+        },
+        {
+          "name": "include_4",
+          "type": "POWER_PROMPT_PARTIAL",
+          "link": null
         }
       ],
       "outputs": [
         {
-          "name": "STRING",
+          "name": "prompt",
           "type": "STRING",
-          "links": null
+          "links": [
+            19
+          ]
+        },
+        {
+          "name": "raw_prompt",
+          "type": "STRING",
+          "links": [
+            17
+          ]
         }
       ],
-      "title": "Positive Raw Prompt",
+      "title": "Power Prompt Positive Prompt",
       "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.25.1",
-        "Node name for S&R": "PreviewAny"
+        "aux_id": "Kramins/comfyui-power-prompt",
+        "ver": "ae55f4f8d106d7e2b9e01d4a50798f85597450ca",
+        "Node name for S&R": "PowerPromptNode"
       },
       "widgets_values": [
-        null,
-        null,
-        null
+        "variables:\n  art_style:\n    type: select\n    count: 1\n    options:\n      - anime\n      - manga\n      - cel shading\n      - watercolor illustration\n      - oil painting\n\n  extra_tags:\n    label: \"Extra Tags\"\n    type: text\n\nprompt: |\n  {{ fragment.character_design }},\n  {{ fragment.location }},\n  {{ art_style }},\n  {{ fragment.pose_description }},\n  {% if extra_tags %}{{ extra_tags }},{% endif %}\n  masterpiece, best quality, detailed\n",
+        "{\"char_notes\":\"\",\"setting\":\"random\",\"location_notes\":\"\",\"extra_tags\":\"\"}",
+        365543716903527,
+        "randomize"
       ],
       "color": "#232",
       "bgcolor": "#353"
     },
     {
-      "id": 5,
-      "type": "EmptyLatentImage",
+      "id": 27,
+      "type": "PowerPromptFilePartial",
       "pos": [
-        -385.938651773071,
-        757.2402501062005
+        -1460.435887895258,
+        715.7465538052248
       ],
       "size": [
-        315,
-        106
+        681.0295349625519,
+        102
       ],
       "flags": {},
-      "order": 1,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
         {
-          "name": "LATENT",
-          "type": "LATENT",
-          "slot_index": 0,
+          "name": "partial",
+          "type": "POWER_PROMPT_PARTIAL",
           "links": [
-            23
+            41
           ]
         }
       ],
       "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.25.1",
-        "Node name for S&R": "EmptyLatentImage"
+        "aux_id": "Kramins/comfyui-power-prompt",
+        "ver": "68bc40918e845e76b15b1e1fc298b06cf2d84e0f",
+        "Node name for S&R": "PowerPromptFilePartial"
       },
       "widgets_values": [
-        1024,
-        1024,
-        1
-      ]
+        "action-pose.yaml",
+        "variables:\n\n  shot_type:\n    label: \"Shot Type\"\n    group: \"Composition\"\n    type: select\n    count: 1\n    options:\n      - value: full body\n        weight: 2\n        tags: [full, shows_legs]\n      - value: cowboy shot\n        weight: 2\n        tags: [upper, shows_legs]\n      - value: upper body\n        weight: 2\n        tags: [upper]\n      - value: portrait\n        tags: [close]\n      - value: close-up\n        tags: [close, face_only]\n      - value: low angle\n        tags: [full, dynamic, low_angle]\n      - value: overhead view\n        tags: [full, dynamic, high_angle]\n\n  pose:\n    label: \"Pose\"\n    group: \"Composition\"\n    type: select\n    count: 1\n    options:\n      - value: standing\n        weight: 3\n        tags: [standing, upright]\n      - value: sitting\n        weight: 2\n        tags: [sitting]\n      - value: kneeling\n        tags: [sitting, low]\n        unless: \"'face_only' in shot_type_tags\"\n      - value: leaning against wall\n        weight: 2\n        tags: [leaning, upright]\n        unless: \"'face_only' in shot_type_tags\"\n      - value: crouching\n        tags: [low, dynamic]\n        when: \"'full' in shot_type_tags or 'shows_legs' in shot_type_tags\"\n      - value: lying down\n        tags: [lying]\n        when: \"'full' in shot_type_tags\"\n      - value: walking\n        weight: 2\n        tags: [moving, upright]\n        unless: \"'face_only' in shot_type_tags\"\n      - value: running\n        tags: [moving, dynamic]\n        when: \"'full' in shot_type_tags or 'shows_legs' in shot_type_tags\"\n      - value: mid-jump\n        tags: [airborne, dynamic]\n        when: \"'full' in shot_type_tags\"\n      - value: looking back over shoulder\n        tags: [turned, upright]\n        unless: \"'face_only' in shot_type_tags\"\n\n  action:\n    label: \"Action\"\n    group: \"Composition\"\n    type: select\n    count: 1\n    options:\n      # universal\n      - value: gazing into the distance\n        weight: 3\n      - value: looking at the camera\n        weight: 3\n      - value: lost in thought\n        weight: 2\n\n      # pose-conditional\n      - value: reading a book\n        weight: 2\n        when: \"'sitting' in pose_tags or 'lying' in pose_tags\"\n      - value: writing in a notebook\n        when: \"'sitting' in pose_tags\"\n      - value: hair blowing in the wind\n        weight: 2\n        when: \"'upright' in pose_tags or 'moving' in pose_tags\"\n      - value: stretching arms above head\n        when: \"'standing' in pose_tags\"\n      - value: arms outstretched\n        when: \"'upright' in pose_tags or 'airborne' in pose_tags\"\n      - value: adjusting hair\n        weight: 2\n        when: \"'upright' in pose_tags or 'sitting' in pose_tags\"\n      - value: looking down at hands\n        when: \"'sitting' in pose_tags or 'kneeling' in pose_tags\"\n\n      # archetype-conditional (requires character partial to be connected)\n      - value: studying, surrounded by books\n        when: \"'student' in char_archetype_tags and 'sitting' in pose_tags\"\n      - value: praying quietly\n        when: \"'shrine' in char_archetype_tags\"\n      - value: battle stance, weapon drawn\n        when: \"'warrior' in char_archetype_tags\"\n      - value: casting a spell, glowing hands\n        when: \"'magical' in char_archetype_tags\"\n      - value: performing for a crowd\n        when: \"'performer' in char_archetype_tags\"\n\n      # location-conditional (requires location partial to be connected)\n      - value: watching the waves\n        when: \"'coastal' in location_type_tags\"\n      - value: watching the city lights\n        when: \"'city' in location_type_tags and 'elevated' in setting_tags\"\n      - value: sitting by a window, watching the rain\n        when: \"'indoor' in location_type_tags and 'sitting' in pose_tags\"\n      - value: walking through falling leaves\n        when: \"'nature' in location_type_tags and 'moving' in pose_tags\"\n\nfragments:\n  pose_description: \"{{ shot_type }}, {{ pose }}, {{ action }}\"\n",
+        ""
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
     },
     {
       "id": 18,
       "type": "1e09cd9f-979e-4b9d-9fd5-6931b5dd7125",
       "pos": [
-        1357.6297323505971,
-        152.29374275000004
+        805.4932927689315,
+        227.58508524999988
       ],
       "size": [
         371.05099999999993,
         346
       ],
       "flags": {},
-      "order": 8,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -251,15 +472,15 @@
       "id": 12,
       "type": "PreviewImage",
       "pos": [
-        1892.2344009770818,
-        149.13660556635188
+        1195.4205518137512,
+        70.89267942093566
       ],
       "size": [
         498.54983939697286,
         495.2870935758347
       ],
       "flags": {},
-      "order": 9,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -283,98 +504,41 @@
       "widgets_values": []
     },
     {
-      "id": 15,
-      "type": "PreviewAny",
+      "id": 30,
+      "type": "MarkdownNote",
       "pos": [
-        295.12965733868424,
-        92.61430996219744
+        -1939.4585091999727,
+        463.9993717644063
       ],
       "size": [
-        490,
-        238.5
+        459.4399796905518,
+        346.1650000000001
       ],
       "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "source",
-          "type": "*",
-          "link": 19
-        }
-      ],
-      "outputs": [
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            26
-          ]
-        }
-      ],
-      "title": "Positive Prompt",
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.25.1",
-        "Node name for S&R": "PreviewAny"
-      },
-      "widgets_values": [
-        null,
-        null,
-        null
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
-      "id": 17,
-      "type": "PrimitiveStringMultiline",
-      "pos": [
-        296.31902299691353,
-        378.26363059217965
-      ],
-      "size": [
-        482.67277458166495,
-        201.47637291833507
-      ],
-      "flags": {},
-      "order": 2,
+      "order": 5,
       "mode": 0,
       "inputs": [],
-      "outputs": [
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            27
-          ]
-        }
-      ],
-      "title": "Negative Prompt",
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.26.0",
-        "Node name for S&R": "PrimitiveStringMultiline"
-      },
+      "outputs": [],
+      "properties": {},
       "widgets_values": [
-        "text, watermark"
+        "## Action & Pose Partial\n\n1. Download **action-pose.yaml**:\n   [github.com/Kramins/comfyui-power-prompt](https://github.com/Kramins/comfyui-power-prompt/blob/main/examples/action-pose.yaml)\n\n2. Click **Upload** on the node and select the downloaded file\n\n3. Add to your prompt template:\n   `{{ fragment.pose_description }}`\n"
       ],
-      "color": "#322",
-      "bgcolor": "#533"
+      "color": "#432",
+      "bgcolor": "#653"
     },
     {
       "id": 19,
       "type": "PowerPromptPartial",
       "pos": [
-        -1806.5076471003465,
-        -667.8940300538391
+        -1455.1387375993788,
+        -611.2295207500471
       ],
       "size": [
         699.3808254134519,
         670.3449891689147
       ],
       "flags": {},
-      "order": 3,
+      "order": 6,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -382,7 +546,7 @@
           "name": "partial",
           "type": "POWER_PROMPT_PARTIAL",
           "links": [
-            36
+            40
           ]
         }
       ],
@@ -395,105 +559,6 @@
       "widgets_values": [
         "variables:\n\n  char_archetype:\n    label: \"Archetype\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: high school girl\n        tags: [student, young]\n      - value: office worker\n        tags: [adult]\n      - value: shrine maiden\n        tags: [shrine, young]\n      - value: idol\n        tags: [young, performer]\n      - value: knight\n        tags: [adult, warrior]\n      - value: mage\n        tags: [adult, magical]\n\n  hair_length:\n    label: \"Hair Length\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: short hair\n        tags: [short]\n      - value: medium hair\n        tags: [medium]\n        weight: 2\n      - value: long hair\n        tags: [long]\n        weight: 2\n      - value: very long hair\n        tags: [long, very_long]\n\n  hair_color:\n    label: \"Hair Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: black hair\n        weight: 3\n      - value: brown hair\n        weight: 2\n      - value: blonde hair\n        weight: 2\n      - value: silver hair\n      - value: white hair\n      - value:\n          - pink hair\n          - blue hair\n          - purple hair\n        tags: [vivid]\n\n  hair_style:\n    label: \"Hair Style\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: straight\n      - value: wavy\n      - value: twin tails\n        when: \"'long' in hair_length_tags\"\n      - value: ponytail\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: braided\n        when: \"'long' in hair_length_tags\"\n      - value: bob cut\n        when: \"'short' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: messy bun\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n\n  hair_accessory:\n    label: \"Hair Accessory\"\n    group: \"Character\"\n    type: select\n    count: 0-1\n    options:\n      - value: hair ribbon\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: hair bow\n        when: \"'long' in hair_length_tags\"\n      - value: hair clip\n      - value: flower hair pin\n      - value: headband\n        unless: \"'very_long' in hair_length_tags\"\n      - value: miko hair ornament\n        when: \"'shrine' in char_archetype_tags\"\n\n  eye_color:\n    label: \"Eye Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: brown eyes\n        weight: 3\n      - value: blue eyes\n        weight: 2\n      - value: green eyes\n      - value: grey eyes\n      - value: amber eyes\n      - value:\n          - red eyes\n          - violet eyes\n          - golden eyes\n        when: \"'vivid' in hair_color_tags or 'shrine' in char_archetype_tags or 'magical' in char_archetype_tags\"\n\n  expression:\n    label: \"Expression\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - smiling\n      - gentle smile\n      - serious expression\n      - value: determined expression\n        when: \"'warrior' in char_archetype_tags\"\n      - value: cheerful expression\n        when: \"'performer' in char_archetype_tags or 'student' in char_archetype_tags\"\n      - bashful\n      - serene expression\n\n  char_notes:\n    label: \"Extra Character Notes\"\n    group: \"Character\"\n    type: text\n\nfragments:\n  char_hair: \"{{ hair_color }}, {{ hair_length }}, {{ hair_style }}{% if hair_accessory %}, {{ hair_accessory }}{% endif %}\"\n  char_eyes: \"{{ eye_color }}\"\n  character_design: \"1girl, {{ char_archetype }}, {{ fragment.char_hair }}, {{ fragment.char_eyes }}, {{ expression }}{% if char_notes %}, {{ char_notes }}{% endif %}\"\n",
         "variables:\n\n  char_archetype:\n    label: \"Archetype\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: high school girl\n        tags: [student, young]\n      - value: office worker\n        tags: [adult]\n      - value: shrine maiden\n        tags: [shrine, young]\n      - value: idol\n        tags: [young, performer]\n      - value: knight\n        tags: [adult, warrior]\n      - value: mage\n        tags: [adult, magical]\n\n  hair_length:\n    label: \"Hair Length\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: short hair\n        tags: [short]\n      - value: medium hair\n        tags: [medium]\n        weight: 2\n      - value: long hair\n        tags: [long]\n        weight: 2\n      - value: very long hair\n        tags: [long, very_long]\n\n  hair_color:\n    label: \"Hair Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: black hair\n        weight: 3\n      - value: brown hair\n        weight: 2\n      - value: blonde hair\n        weight: 2\n      - value: silver hair\n      - value: white hair\n      - value:\n          - pink hair\n          - blue hair\n          - purple hair\n        tags: [vivid]\n\n  hair_style:\n    label: \"Hair Style\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: straight\n      - value: wavy\n      - value: twin tails\n        when: \"'long' in hair_length_tags\"\n      - value: ponytail\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: braided\n        when: \"'long' in hair_length_tags\"\n      - value: bob cut\n        when: \"'short' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: messy bun\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n\n  hair_accessory:\n    label: \"Hair Accessory\"\n    group: \"Character\"\n    type: select\n    count: 0-1\n    options:\n      - value: hair ribbon\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: hair bow\n        when: \"'long' in hair_length_tags\"\n      - value: hair clip\n      - value: flower hair pin\n      - value: headband\n        unless: \"'very_long' in hair_length_tags\"\n      - value: miko hair ornament\n        when: \"'shrine' in char_archetype_tags\"\n\n  eye_color:\n    label: \"Eye Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: brown eyes\n        weight: 3\n      - value: blue eyes\n        weight: 2\n      - value: green eyes\n      - value: grey eyes\n      - value: amber eyes\n      - value:\n          - red eyes\n          - violet eyes\n          - golden eyes\n        when: \"'vivid' in hair_color_tags or 'shrine' in char_archetype_tags or 'magical' in char_archetype_tags\"\n\n  expression:\n    label: \"Expression\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - smiling\n      - gentle smile\n      - serious expression\n      - value: determined expression\n        when: \"'warrior' in char_archetype_tags\"\n      - value: cheerful expression\n        when: \"'performer' in char_archetype_tags or 'student' in char_archetype_tags\"\n      - bashful\n      - serene expression\n\n  char_notes:\n    label: \"Extra Character Notes\"\n    group: \"Character\"\n    type: text\n\nfragments:\n  char_hair: \"{{ hair_color }}, {{ hair_length }}, {{ hair_style }}{% if hair_accessory %}, {{ hair_accessory }}{% endif %}\"\n  char_eyes: \"{{ eye_color }}\"\n  character_design: \"1girl, {{ char_archetype }}, {{ fragment.char_hair }}, {{ fragment.char_eyes }}, {{ expression }}{% if char_notes %}, {{ char_notes }}{% endif %}\"\n"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
-      "id": 23,
-      "type": "PowerPromptPartial",
-      "pos": [
-        -1810.4508263088403,
-        76.1872971205768
-      ],
-      "size": [
-        680.0610998026127,
-        563.1994147957153
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "partial",
-          "type": "POWER_PROMPT_PARTIAL",
-          "links": [
-            38
-          ]
-        }
-      ],
-      "title": "Location",
-      "properties": {
-        "aux_id": "Kramins/comfyui-power-prompt",
-        "ver": "ae55f4f8d106d7e2b9e01d4a50798f85597450ca",
-        "Node name for S&R": "PowerPromptPartial"
-      },
-      "widgets_values": [
-        "variables:\n\n  location_type:\n    label: \"Location Type\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: urban\n        tags: [outdoor, city]\n      - value: nature\n        tags: [outdoor, nature]\n      - value: coastal\n        tags: [outdoor, nature, coastal]\n      - value: indoor\n        tags: [indoor]\n      - value: fantasy realm\n        tags: [outdoor, fantasy]\n      - value: traditional\n        tags: [outdoor, traditional]\n\n  setting:\n    label: \"Setting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      # urban\n      - value: city street\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: rooftop\n        tags: [urban, elevated]\n        when: \"'city' in location_type_tags\"\n      - value: back alley\n        tags: [urban, narrow]\n        when: \"'city' in location_type_tags\"\n      - value: train station platform\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: shopping arcade\n        tags: [urban, covered]\n        when: \"'city' in location_type_tags\"\n      # nature\n      - value: forest path\n        tags: [nature, enclosed]\n        when: \"'nature' in location_type_tags\"\n      - value: mountain overlook\n        tags: [nature, elevated]\n        when: \"'nature' in location_type_tags\"\n      - value: riverbank\n        tags: [nature, water]\n        when: \"'nature' in location_type_tags\"\n      - value: meadow\n        tags: [nature, open]\n        when: \"'nature' in location_type_tags\"\n      # coastal\n      - value: sandy beach\n        tags: [coastal, open]\n        when: \"'coastal' in location_type_tags\"\n      - value: cliff overlooking the sea\n        tags: [coastal, elevated]\n        when: \"'coastal' in location_type_tags\"\n      - value: seaside pier\n        tags: [coastal, water]\n        when: \"'coastal' in location_type_tags\"\n      # indoor\n      - value: cozy cafe\n        tags: [indoor, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: library\n        tags: [indoor, quiet]\n        when: \"'indoor' in location_type_tags\"\n      - value: bedroom\n        tags: [indoor, intimate]\n        when: \"'indoor' in location_type_tags\"\n      - value: school classroom\n        tags: [indoor, school]\n        when: \"'indoor' in location_type_tags\"\n      - value: cathedral interior\n        tags: [indoor, grand]\n        when: \"'indoor' in location_type_tags\"\n      # fantasy\n      - value: ancient ruins\n        tags: [fantasy, outdoor]\n        when: \"'fantasy' in location_type_tags\"\n      - value: floating island\n        tags: [fantasy, elevated]\n        when: \"'fantasy' in location_type_tags\"\n      - value: enchanted forest\n        tags: [fantasy, nature]\n        when: \"'fantasy' in location_type_tags\"\n      # traditional\n      - value: shrine steps\n        tags: [traditional, elevated]\n        when: \"'traditional' in location_type_tags\"\n      - value: Japanese garden\n        tags: [traditional, nature]\n        when: \"'traditional' in location_type_tags\"\n      - value: bamboo grove\n        tags: [traditional, nature, enclosed]\n        when: \"'traditional' in location_type_tags\"\n\n  season:\n    label: \"Season\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: spring\n        tags: [warm, bright, blooming]\n        weight: 2\n      - value: summer\n        tags: [hot, bright]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: autumn\n        tags: [cool, moody]\n      - value: winter\n        tags: [cold, dark]\n\n  weather:\n    label: \"Weather\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: clear sky\n        tags: [dry, bright]\n        weight: 3\n        unless: \"'indoor' in location_type_tags\"\n      - value: scattered clouds\n        tags: [dry]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: overcast\n        tags: [grey, dry]\n        unless: \"'indoor' in location_type_tags\"\n      - value: light rain\n        tags: [rainy, wet]\n        unless: \"'indoor' in location_type_tags\"\n      - value: heavy rain\n        tags: [rainy, wet, dramatic]\n        unless: \"'indoor' in location_type_tags or season == 'winter'\"\n      - value: snowfall\n        tags: [snowy, cold]\n        when: \"season == 'winter' and 'outdoor' in location_type_tags\"\n      - value: cherry blossoms drifting\n        tags: [dry, magical, blooming]\n        when: \"season == 'spring' and 'outdoor' in location_type_tags\"\n      - value: autumn leaves falling\n        tags: [dry, magical]\n        when: \"season == 'autumn' and 'outdoor' in location_type_tags\"\n      - value: indoor lighting\n        tags: [dry, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: golden mist\n        tags: [dry, magical]\n        when: \"'fantasy' in location_type_tags\"\n\n  time_of_day:\n    label: \"Time of Day\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: dawn\n        tags: [dim, cool_light]\n        unless: \"'indoor' in location_type_tags\"\n      - value: morning\n        tags: [bright, warm_light]\n      - value: afternoon\n        tags: [bright, warm_light]\n      - value: golden hour\n        tags: [warm_light, dramatic]\n        weight: 2\n      - value: dusk\n        tags: [dim, warm_light, dramatic]\n        weight: 2\n      - value: night\n        tags: [dark, cool_light]\n      - value: midnight\n        tags: [dark, cool_light]\n        when: \"'indoor' in location_type_tags or 'fantasy' in location_type_tags\"\n\n  lighting:\n    label: \"Lighting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: soft natural light\n        when: \"'bright' in time_of_day_tags and 'dry' in weather_tags\"\n      - value: harsh midday sun\n        when: \"time_of_day == 'afternoon' and 'hot' in season_tags\"\n      - value: dappled sunlight through leaves\n        when: \"'nature' in setting_tags and 'bright' in time_of_day_tags\"\n      - value: golden hour rays\n        when: \"'warm_light' in time_of_day_tags and 'dramatic' in time_of_day_tags\"\n      - value: overcast diffused light\n        when: \"'grey' in weather_tags\"\n      - value: dramatic storm light\n        when: \"'dramatic' in weather_tags\"\n      - value: moonlight\n        when: \"'dark' in time_of_day_tags and 'outdoor' in location_type_tags\"\n      - value: warm cafe glow\n        when: \"setting == 'cozy cafe'\"\n      - value: candlelight\n        when: \"'indoor' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: neon reflections\n        when: \"'city' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: magical ambient light\n        when: \"'fantasy' in location_type_tags\"\n      - value: lantern light\n        when: \"'traditional' in location_type_tags and 'dark' in time_of_day_tags\"\n\n  location_notes:\n    label: \"Extra Location Notes\"\n    group: \"Location\"\n    type: text\n\nfragments:\n  loc_weather_season: \"{{ season }}{% if 'outdoor' in location_type_tags %}, {{ weather }}{% endif %}\"\n  loc_atmosphere: \"{{ time_of_day }}, {{ lighting }}\"\n  location: \"{{ setting }}, {{ fragment.loc_weather_season }}, {{ fragment.loc_atmosphere }}{% if location_notes %}, {{ location_notes }}{% endif %}\"\n",
-        "variables:\n\n  location_type:\n    label: \"Location Type\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: urban\n        tags: [outdoor, city]\n      - value: nature\n        tags: [outdoor, nature]\n      - value: coastal\n        tags: [outdoor, nature, coastal]\n      - value: indoor\n        tags: [indoor]\n      - value: fantasy realm\n        tags: [outdoor, fantasy]\n      - value: traditional\n        tags: [outdoor, traditional]\n\n  setting:\n    label: \"Setting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      # urban\n      - value: city street\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: rooftop\n        tags: [urban, elevated]\n        when: \"'city' in location_type_tags\"\n      - value: back alley\n        tags: [urban, narrow]\n        when: \"'city' in location_type_tags\"\n      - value: train station platform\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: shopping arcade\n        tags: [urban, covered]\n        when: \"'city' in location_type_tags\"\n      # nature\n      - value: forest path\n        tags: [nature, enclosed]\n        when: \"'nature' in location_type_tags\"\n      - value: mountain overlook\n        tags: [nature, elevated]\n        when: \"'nature' in location_type_tags\"\n      - value: riverbank\n        tags: [nature, water]\n        when: \"'nature' in location_type_tags\"\n      - value: meadow\n        tags: [nature, open]\n        when: \"'nature' in location_type_tags\"\n      # coastal\n      - value: sandy beach\n        tags: [coastal, open]\n        when: \"'coastal' in location_type_tags\"\n      - value: cliff overlooking the sea\n        tags: [coastal, elevated]\n        when: \"'coastal' in location_type_tags\"\n      - value: seaside pier\n        tags: [coastal, water]\n        when: \"'coastal' in location_type_tags\"\n      # indoor\n      - value: cozy cafe\n        tags: [indoor, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: library\n        tags: [indoor, quiet]\n        when: \"'indoor' in location_type_tags\"\n      - value: bedroom\n        tags: [indoor, intimate]\n        when: \"'indoor' in location_type_tags\"\n      - value: school classroom\n        tags: [indoor, school]\n        when: \"'indoor' in location_type_tags\"\n      - value: cathedral interior\n        tags: [indoor, grand]\n        when: \"'indoor' in location_type_tags\"\n      # fantasy\n      - value: ancient ruins\n        tags: [fantasy, outdoor]\n        when: \"'fantasy' in location_type_tags\"\n      - value: floating island\n        tags: [fantasy, elevated]\n        when: \"'fantasy' in location_type_tags\"\n      - value: enchanted forest\n        tags: [fantasy, nature]\n        when: \"'fantasy' in location_type_tags\"\n      # traditional\n      - value: shrine steps\n        tags: [traditional, elevated]\n        when: \"'traditional' in location_type_tags\"\n      - value: Japanese garden\n        tags: [traditional, nature]\n        when: \"'traditional' in location_type_tags\"\n      - value: bamboo grove\n        tags: [traditional, nature, enclosed]\n        when: \"'traditional' in location_type_tags\"\n\n  season:\n    label: \"Season\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: spring\n        tags: [warm, bright, blooming]\n        weight: 2\n      - value: summer\n        tags: [hot, bright]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: autumn\n        tags: [cool, moody]\n      - value: winter\n        tags: [cold, dark]\n\n  weather:\n    label: \"Weather\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: clear sky\n        tags: [dry, bright]\n        weight: 3\n        unless: \"'indoor' in location_type_tags\"\n      - value: scattered clouds\n        tags: [dry]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: overcast\n        tags: [grey, dry]\n        unless: \"'indoor' in location_type_tags\"\n      - value: light rain\n        tags: [rainy, wet]\n        unless: \"'indoor' in location_type_tags\"\n      - value: heavy rain\n        tags: [rainy, wet, dramatic]\n        unless: \"'indoor' in location_type_tags or season == 'winter'\"\n      - value: snowfall\n        tags: [snowy, cold]\n        when: \"season == 'winter' and 'outdoor' in location_type_tags\"\n      - value: cherry blossoms drifting\n        tags: [dry, magical, blooming]\n        when: \"season == 'spring' and 'outdoor' in location_type_tags\"\n      - value: autumn leaves falling\n        tags: [dry, magical]\n        when: \"season == 'autumn' and 'outdoor' in location_type_tags\"\n      - value: indoor lighting\n        tags: [dry, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: golden mist\n        tags: [dry, magical]\n        when: \"'fantasy' in location_type_tags\"\n\n  time_of_day:\n    label: \"Time of Day\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: dawn\n        tags: [dim, cool_light]\n        unless: \"'indoor' in location_type_tags\"\n      - value: morning\n        tags: [bright, warm_light]\n      - value: afternoon\n        tags: [bright, warm_light]\n      - value: golden hour\n        tags: [warm_light, dramatic]\n        weight: 2\n      - value: dusk\n        tags: [dim, warm_light, dramatic]\n        weight: 2\n      - value: night\n        tags: [dark, cool_light]\n      - value: midnight\n        tags: [dark, cool_light]\n        when: \"'indoor' in location_type_tags or 'fantasy' in location_type_tags\"\n\n  lighting:\n    label: \"Lighting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: soft natural light\n        when: \"'bright' in time_of_day_tags and 'dry' in weather_tags\"\n      - value: harsh midday sun\n        when: \"time_of_day == 'afternoon' and 'hot' in season_tags\"\n      - value: dappled sunlight through leaves\n        when: \"'nature' in setting_tags and 'bright' in time_of_day_tags\"\n      - value: golden hour rays\n        when: \"'warm_light' in time_of_day_tags and 'dramatic' in time_of_day_tags\"\n      - value: overcast diffused light\n        when: \"'grey' in weather_tags\"\n      - value: dramatic storm light\n        when: \"'dramatic' in weather_tags\"\n      - value: moonlight\n        when: \"'dark' in time_of_day_tags and 'outdoor' in location_type_tags\"\n      - value: warm cafe glow\n        when: \"setting == 'cozy cafe'\"\n      - value: candlelight\n        when: \"'indoor' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: neon reflections\n        when: \"'city' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: magical ambient light\n        when: \"'fantasy' in location_type_tags\"\n      - value: lantern light\n        when: \"'traditional' in location_type_tags and 'dark' in time_of_day_tags\"\n\n  location_notes:\n    label: \"Extra Location Notes\"\n    group: \"Location\"\n    type: text\n\nfragments:\n  loc_weather_season: \"{{ season }}{% if 'outdoor' in location_type_tags %}, {{ weather }}{% endif %}\"\n  loc_atmosphere: \"{{ time_of_day }}, {{ lighting }}\"\n  location: \"{{ setting }}, {{ fragment.loc_weather_season }}, {{ fragment.loc_atmosphere }}{% if location_notes %}, {{ location_notes }}{% endif %}\"\n"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
-      "id": 14,
-      "type": "PowerPromptNode",
-      "pos": [
-        -544.9685299650648,
-        -511.5138707357722
-      ],
-      "size": [
-        745.9781482182915,
-        1036.3841461124398
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "include_1",
-          "type": "POWER_PROMPT_PARTIAL",
-          "link": 36
-        },
-        {
-          "name": "include_2",
-          "type": "POWER_PROMPT_PARTIAL",
-          "link": 38
-        },
-        {
-          "name": "include_3",
-          "type": "POWER_PROMPT_PARTIAL",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "prompt",
-          "type": "STRING",
-          "links": [
-            19
-          ]
-        },
-        {
-          "name": "raw_prompt",
-          "type": "STRING",
-          "links": [
-            17
-          ]
-        }
-      ],
-      "title": "Power Prompt Positive Prompt",
-      "properties": {
-        "aux_id": "Kramins/comfyui-power-prompt",
-        "ver": "ae55f4f8d106d7e2b9e01d4a50798f85597450ca",
-        "Node name for S&R": "PowerPromptNode"
-      },
-      "widgets_values": [
-        "variables:\n  art_style:\n    type: select\n    count: 1\n    options:\n      - anime\n      - manga\n      - cel shading\n      - watercolor illustration\n      - oil painting\n\n  extra_tags:\n    label: \"Extra Tags\"\n    type: text\n\nprompt: |\n  {{ fragment.character_design }},\n  {{ fragment.location }},\n  {{ art_style }},\n  {% if extra_tags %}{{ extra_tags }},{% endif %}\n  masterpiece, best quality, detailed\n",
-        "{\"char_notes\":\"\",\"setting\":\"random\",\"location_notes\":\"\",\"extra_tags\":\"\"}",
-        467203106474238,
-        "randomize"
       ],
       "color": "#232",
       "bgcolor": "#353"
@@ -573,7 +638,15 @@
       "IMAGE"
     ],
     [
-      36,
+      38,
+      23,
+      0,
+      14,
+      1,
+      "POWER_PROMPT_PARTIAL"
+    ],
+    [
+      40,
       19,
       0,
       14,
@@ -581,11 +654,11 @@
       "POWER_PROMPT_PARTIAL"
     ],
     [
-      38,
-      23,
+      41,
+      27,
       0,
       14,
-      1,
+      2,
       "POWER_PROMPT_PARTIAL"
     ]
   ],
@@ -597,8 +670,8 @@
         "version": 1,
         "state": {
           "lastGroupId": 0,
-          "lastNodeId": 26,
-          "lastLinkId": 38,
+          "lastNodeId": 30,
+          "lastLinkId": 41,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -1076,7 +1149,7 @@
               "Node name for S&R": "KSampler"
             },
             "widgets_values": [
-              638282161055551,
+              664627202582789,
               "randomize",
               20,
               8,
@@ -1240,10 +1313,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.42409761837248505,
+      "scale": 0.42409761837248605,
       "offset": [
-        2172.062442397542,
-        880.1918211780009
+        2056.722720510848,
+        945.059808889099
       ]
     },
     "frontendVersion": "1.45.19"

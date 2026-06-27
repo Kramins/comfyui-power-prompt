@@ -1,3 +1,9 @@
+import logging
+import os
+import pathlib
+
+logger = logging.getLogger(__name__)
+
 try:
     from .nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 except ImportError:
@@ -8,3 +14,61 @@ except ImportError:
 WEB_DIRECTORY = "./web/js"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
+
+try:
+    import folder_paths
+    from server import PromptServer
+    from aiohttp import web
+
+    # Register the power-prompt partials directory so get_filename_list works
+    # and ComfyUI's COMBO widget can list .yaml/.yml files from it.
+    _partials_dir = os.path.join(folder_paths.get_input_directory(), "power-prompt")
+    os.makedirs(_partials_dir, exist_ok=True)
+    folder_paths.folder_names_and_paths["power_prompt_partials"] = (
+        [_partials_dir],
+        {".yaml", ".yml"},
+    )
+
+    def _in_partials_dir(p: pathlib.Path) -> bool:
+        """Return True iff resolved path p is inside the registered partials directory."""
+        return str(p.resolve()).startswith(str(pathlib.Path(_partials_dir).resolve()))
+
+    @PromptServer.instance.routes.post("/power_prompt/upload_partial")
+    async def _pp_upload_partial(request):
+        reader = await request.multipart()
+        field = await reader.next()
+        if field is None:
+            return web.json_response({"filename": None, "error": "No file received"})
+        filename = pathlib.Path(field.filename or "").name  # strip path components
+        if not filename or not filename.lower().endswith((".yaml", ".yml")):
+            return web.json_response({"filename": None, "error": "Only .yaml and .yml files are supported"})
+        save_path = pathlib.Path(_partials_dir) / filename
+        if save_path.exists():
+            return web.json_response({"filename": None, "error": f"File already exists: {filename}"})
+        try:
+            with open(save_path, "wb") as f:
+                while chunk := await field.read_chunk():
+                    f.write(chunk)
+            return web.json_response({"filename": filename, "error": None})
+        except OSError as e:
+            return web.json_response({"filename": None, "error": str(e)})
+
+    @PromptServer.instance.routes.get("/power_prompt/read_file")
+    async def _pp_read_file(request):
+        name = request.query.get("path", "").strip()
+        if not name:
+            return web.json_response({"content": None, "error": "No filename provided"})
+        resolved = folder_paths.get_full_path("power_prompt_partials", name)
+        if not resolved:
+            return web.json_response({"content": None, "error": f"File not found: {name}"})
+        p = pathlib.Path(resolved)
+        if not _in_partials_dir(p):
+            return web.json_response({"content": None, "error": "Access denied"})
+        try:
+            content = p.read_text(encoding="utf-8")
+            return web.json_response({"content": content, "error": None})
+        except OSError as e:
+            return web.json_response({"content": None, "error": str(e)})
+
+except Exception as e:
+    logger.warning("Power Prompt: failed to register routes/folder: %s", e)
