@@ -1,0 +1,18 @@
+variables:
+  subject:
+    type: select
+    count: 1
+    options:
+      - 1girl
+      - 1boy
+
+  art_style:
+    type: select
+    count: 1
+    options:
+      - anime
+      - oil painting
+      - watercolor sketch
+
+prompt: |
+  {{ subject }}, {{ art_style }}, masterpiece, best quality

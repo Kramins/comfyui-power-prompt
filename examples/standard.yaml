@@ -1,0 +1,58 @@
+variables:
+  season:
+    type: select
+    count: 1
+    options:
+      - value: spring
+        weight: 2
+        tags: [warm, blooming]
+      - value: summer
+        weight: 2
+        tags: [hot]
+      - value: autumn
+        tags: [cool, moody]
+      - value: winter
+        tags: [cold]
+
+  character:
+    type: select
+    count: 1
+    options:
+      - value: 1girl
+        tags: [female]
+      - value: 1boy
+        tags: [male]
+
+  outfit:
+    type: select
+    count: 1
+    options:
+      - value: light summer dress
+        when: "'hot' in season_tags"
+      - value: cosy knit sweater
+        when: "'cold' in season_tags or 'cool' in season_tags"
+      - value: floral blouse
+        when: "'warm' in season_tags"
+      - casual outfit
+
+  accessories:
+    type: select
+    count: 0-2
+    options:
+      - value: flower crown
+        when: "'blooming' in season_tags"
+      - value: scarf
+        when: "'cold' in season_tags"
+      - value: sunglasses
+        unless: "'cold' in season_tags"
+      - wristwatch
+
+  notes:
+    type: text
+
+prompt: |
+  {{ character }}, {{ outfit }},
+  {% if accessories %}{{ accessories }},{% endif %}
+  {{ season }},
+  {% if notes %}{{ notes }},{% endif %}
+  masterpiece, best quality

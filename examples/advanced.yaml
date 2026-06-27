@@ -1,0 +1,129 @@
+variables:
+  season:
+    type: select
+    count: 1
+    options:
+      - value: spring
+        weight: 2
+        tags: [warm, bright, blooming]
+      - value: summer
+        weight: 2
+        tags: [hot, bright]
+      - value: autumn
+        tags: [cool, moody]
+      - value: winter
+        tags: [cold, dark]
+
+  weather:
+    type: select
+    count: 1
+    options:
+      - value: clear sky
+        weight: 3
+        tags: [dry]
+      - value: scattered clouds
+        weight: 2
+        tags: [dry]
+      - value:
+          - light rain
+          - drizzle
+        weight: 2
+        tags: [rainy]
+      - value: heavy rain
+        tags: [rainy, dramatic]
+        unless: "season == 'winter'"
+      - value: snowfall
+        tags: [snowy]
+        when: "season == 'winter'"
+      - value: cherry blossoms drifting
+        tags: [dry, magical]
+        when: "season == 'spring'"
+      - value: autumn leaves falling
+        tags: [dry, magical]
+        when: "season == 'autumn'"
+
+  time_of_day:
+    type: select
+    count: 1
+    options:
+      - dawn
+      - morning
+      - afternoon
+      - golden hour
+      - dusk
+      - night
+
+  character:
+    type: select
+    count: 1
+    options:
+      - value: high school girl
+        weight: 3
+        tags: [student]
+      - value: shrine maiden
+        weight: 2
+        tags: [shrine]
+      - value:
+          - magical girl
+          - young witch
+        tags: [magical]
+
+  outfit:
+    type: select
+    count: 1
+    options:
+      - value: school uniform
+        when: "'student' in character_tags and 'cold' not in season_tags"
+      - value: school uniform with coat
+        when: "'student' in character_tags and 'cold' in season_tags"
+      - value: miko outfit
+        when: "'shrine' in character_tags"
+      - value: magical costume
+        when: "'magical' in character_tags"
+
+  accessories:
+    type: select
+    count: 0-2
+    options:
+      - value: holding umbrella
+        when: "'rainy' in weather_tags"
+      - value: scarf and mittens
+        when: "'cold' in season_tags or 'snowy' in weather_tags"
+      - value:
+          - straw hat
+          - sunhat
+        when: "'hot' in season_tags and 'dry' in weather_tags"
+      - value: paper lantern
+        when: "time_of_day in ('dusk', 'night')"
+
+  setting:
+    type: select
+    count: 1
+    options:
+      - value: school rooftop
+        when: "'student' in character_tags"
+      - value: shrine steps
+        when: "'shrine' in character_tags"
+      - city street
+      - park path
+      - riverside
+      - value: snowy forest path
+        when: "'cold' in season_tags or 'snowy' in weather_tags"
+      - value: rain-soaked alleyway
+        when: "'rainy' in weather_tags"
+
+  mood:
+    type: text
+
+# Fragments compose sub-templates from the resolved variables above.
+# Reference them in the prompt (or in later fragments) via {{ fragment.name }}.
+fragments:
+  atmosphere: "{{ season }}, {{ weather }}, {{ time_of_day }}"
+  full_scene: "{{ setting }}, {{ fragment.atmosphere }}"
+
+prompt: |
+  1girl, anime, {{ character }}, {{ outfit }},
+  {% if accessories %}{{ accessories }},{% endif %}
+  {{ fragment.full_scene }},
+  {% if mood %}{{ mood }},{% endif %}
+  masterpiece, best quality, detailed

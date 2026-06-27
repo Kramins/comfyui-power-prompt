@@ -1,0 +1,322 @@
+# Power Prompt — YAML Schema Reference
+#
+# This file documents every field in the Power Prompt YAML format.
+# Each field shows its type, default, whether it is required, and when it can be omitted.
+#
+# Top-level structure:
+#
+#   variables:          (required) map of named variable definitions
+#     <name>:           each key becomes a variable and a UI control
+#       ...
+#   prompt:             (required) Jinja2 template string
+#   fragments:          (optional) map of named Jinja2 sub-template strings
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+# ── variables ─────────────────────────────────────────────────────────────────
+#
+# Required. A YAML mapping of variable names to their definitions.
+# Variables are resolved top-to-bottom; a variable can only reference
+# others that appear above it in `when` expressions.
+#
+# If omitted entirely, the node raises an error.
+# An empty mapping (`variables: {}`) is valid if the prompt needs no substitution.
+
+variables:
+
+  # ── type: select ────────────────────────────────────────────────────────────
+  #
+  # Renders a dropdown (single pick) or chip/checkbox group (multi-pick).
+  # One or more values are randomly chosen from the filtered option pool
+  # unless the user explicitly selects from the UI.
+
+  example_select:
+
+    # label  (optional)
+    # A custom display name shown in the UI instead of the variable key.
+    # Useful when the key needs to be a valid identifier but the label should
+    # be more readable (e.g. key "char_type", label "Character Type").
+    # If omitted, the key is displayed with underscores replaced by spaces.
+    #
+    # Can be omitted when the key name is self-explanatory.
+    label: "Example Select"
+
+    # group  (optional)
+    # A string that visually groups this variable with others sharing the same
+    # string. In the UI panel, groups are rendered first (in first-appearance
+    # order across the YAML), each preceded by a section header with the group
+    # name. Variables without a group appear below all groups.
+    # Case-sensitive — "Environment" and "environment" are different groups.
+    # Has no effect on variable resolution; purely a UI organisation tool.
+    #
+    # Can be omitted when the variable does not need grouping.
+    group: "Environment"
+
+    # hidden  (optional, default: false)
+    # When true, the variable is not shown in the UI panel.
+    # The variable is still resolved (randomly, since the user cannot set it),
+    # and its value is available in the prompt template and in `when`/`unless`
+    # expressions for other variables.
+    # Use this for internal "helper" variables that drive conditional logic but
+    # are not meant to be user-controlled.
+    #
+    # Can be omitted (or set to false) when the variable should be visible.
+    hidden: false
+
+    # type  (required)
+    # Values: "select" | "text"
+    # Aliases: "choice" (= select, count fixed at 1)
+    #          "multiselect" (= select, count fixed at "any")
+    # Cannot be omitted.
+    type: select
+
+    # count  (optional, default: 1)
+    # How many options to pick.
+    #
+    #   1          exactly one (renders a simple dropdown)
+    #   N          exactly N
+    #   "M-N"      a random number between M and N (inclusive)
+    #   "0-N"      zero to N — the variable may contribute nothing to the prompt
+    #   "any"      all checked options (renders a checkbox/chip group, user selects manually)
+    #
+    # Can be omitted when you want the default of exactly 1.
+    count: 1
+
+    # options  (required)
+    # A list of values to pick from.
+    # Each entry is either a plain string (shorthand) or a mapping (full form).
+    #
+    # Cannot be omitted or empty — the node raises an error if the filtered
+    # option pool is empty at resolution time (it falls back to the full list
+    # before erroring, so a fully-filtered-out pool doesn't crash).
+    options:
+
+      # ── Shorthand: plain string ──────────────────────────────────────────
+      # Use when the option needs no weight, condition, or tags.
+      # Equivalent to: { value: "simple option", weight: 1 }
+      - simple option
+
+      # ── Full form: mapping ───────────────────────────────────────────────
+
+      - # value  (required in full form)
+        # Type: string OR list of strings.
+        #
+        # String — a single option value.
+        value: single value
+
+        # weight  (optional, default: 1.0)
+        # Relative probability of this option being chosen.
+        # Higher weight = selected more often.
+        # All weights in the pool are summed; each option's probability = weight / total.
+        #
+        # Can be omitted when you want equal probability (weight 1).
+        weight: 2
+
+        # when  (optional)
+        # A Jinja2 expression evaluated against already-resolved variables.
+        # If it evaluates to False (or is absent), the option is excluded
+        # from the random pool for this generation.
+        #
+        # Available names:
+        #   <varname>        the resolved string (single-pick) or list (multi-pick)
+        #   <varname>_tags   list of tags from the resolved value(s)
+        #
+        # Available functions: len, any, all, min, max, str, int, float, bool,
+        #                      abs, round
+        #
+        # Jinja2 differences from plain Python:
+        #   • Set literals {x, y} are not supported — use lists [x, y] instead
+        #   • Generator expressions (any(x for x in y)) are not supported
+        #   • Attribute access on unsafe objects is blocked by the sandbox
+        #
+        # Can be omitted to make the option always available.
+        when: "example_select == 'simple option'"
+
+        # unless  (optional)
+        # The inverse of `when`. The option is excluded when this expression
+        # evaluates to True. Equivalent to `when: "not (<expr>)"` but easier
+        # to read when the exclusion condition is the natural way to express it.
+        #
+        # `when` is checked first. `unless` is only evaluated if `when` passes.
+        # Both can be used on the same option — the option is included only if
+        # `when` is true AND `unless` is false.
+        #
+        # Shares the same available names and functions as `when`.
+        #
+        # Can be omitted when no exclusion condition is needed.
+        unless: "example_select == 'other option'"
+
+        # tags  (optional)
+        # Type: string OR list of strings.
+        # Semantic labels attached to this option's value.
+        # Injected into the eval context as `<varname>_tags` (always a list),
+        # making them available in downstream `when` expressions.
+        #
+        # Scalar form:  tags: my_tag         → ["my_tag"]
+        # List form:    tags: [a, b, c]      → ["a", "b", "c"]
+        #
+        # Can be omitted when no downstream variable needs to branch on this option's tags.
+        tags: [example_tag, another_tag]
+
+      - # value as a list — multi-value shorthand
+        # All listed strings share the same weight, when, and tags.
+        # Use when several options are equivalent or belong to the same category.
+        # Each string becomes its own independent entry in the option pool.
+        #
+        # Can be omitted in favour of separate entries, but this form avoids
+        # repeating weight/when/tags when they are identical.
+        value:
+          - option variant a
+          - option variant b
+        weight: 1
+        tags: shared_tag
+
+  # ── type: text ──────────────────────────────────────────────────────────────
+  #
+  # Renders a free-text input field.
+  # No random resolution — the value is exactly what the user types.
+  # An empty field contributes an empty string to the template context.
+  #
+  # `count` and `options` are not used with type: text.
+
+  example_text:
+    type: text
+    # No other fields. count and options are ignored if present.
+
+
+# ── prompt ────────────────────────────────────────────────────────────────────
+#
+# Required. A Jinja2 template string rendered after all variables are resolved.
+# The YAML literal block scalar (|) is recommended — it preserves newlines,
+# which are collapsed to spaces during output normalisation.
+#
+# Template features:
+#
+#   {{ varname }}                   insert the resolved variable value
+#   {{ fragment.name }}             insert a rendered prompt fragment (see below)
+#   {% if varname %}...{% endif %}  conditional block (empty string = falsy)
+#   {# this is a comment #}         Jinja2 inline comment — stripped from output
+#   # this is a comment             full-line # comment — stripped before rendering
+#                                   (only lines whose first non-whitespace char is #)
+#
+# Cannot be omitted or empty — the node raises an error.
+
+prompt: |
+  # Comments like this are stripped before rendering and never appear in the output.
+  # Use them to label sections of a complex prompt.
+
+  {{ example_select }},
+  {% if example_text %}{{ example_text }},{% endif %}
+  masterpiece, best quality
+
+
+# ── fragments ─────────────────────────────────────────────────────────────────
+#
+# Optional. A mapping of name → Jinja2 template string.
+# Fragments are rendered after ALL variables are resolved and are available in
+# the prompt template (and in later fragments) via {{ fragment.<name> }}.
+#
+# Key properties:
+#
+#   • Rendered in declaration order — a fragment can reference earlier fragments
+#     using {{ fragment.<earlier_name> }}.
+#   • Do NOT create UI controls — they are always computed, never user-editable.
+#   • Accumulate from connected partials (in include slot order), with the main
+#     YAML winning on any name collision.
+#
+# Can be omitted entirely when no sub-template composition is needed.
+
+fragments:
+
+  # Simple composition from two resolved variables.
+  atmosphere: "{{ example_select }}, {{ example_text }}"
+
+  # Cross-fragment reference — `atmosphere` must appear above `full_scene`.
+  full_scene: "{{ fragment.atmosphere }}, best quality"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Field summary
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# ┌─────────────────────┬──────────────────────┬─────────────┬────────────────────────────────────────────┐
+# │ Field               │ Type                 │ Default     │ Can omit when…                             │
+# ├─────────────────────┼──────────────────────┼─────────────┼────────────────────────────────────────────┤
+# │ variables           │ mapping              │ —           │ Never (required)                           │
+# │ prompt              │ string               │ —           │ Never (required)                           │
+# │ fragments           │ mapping              │ {}          │ No composed sub-templates needed           │
+# ├─────────────────────┼──────────────────────┼─────────────┼────────────────────────────────────────────┤
+# │ <var>.type          │ "select" | "text"    │ —           │ Never (required)                           │
+# │ <var>.label         │ string               │ (key name)  │ Key name is readable enough                │
+# │ <var>.group         │ string               │ (none)      │ No grouping needed                         │
+# │ <var>.hidden        │ bool                 │ false       │ Variable should be visible (default)       │
+# │ <var>.count         │ int | range | "any"  │ 1           │ You want exactly one option picked         │
+# │ <var>.options       │ list                 │ —           │ Never for select (required); N/A for text  │
+# ├─────────────────────┼──────────────────────┼─────────────┼────────────────────────────────────────────┤
+# │ <option>.value      │ string | list        │ —           │ Using shorthand plain-string form          │
+# │ <option>.weight     │ float                │ 1.0         │ Equal probability is fine                  │
+# │ <option>.when       │ Jinja2 expression    │ (always on) │ Option is always available                 │
+# │ <option>.unless     │ Jinja2 expression    │ (never off) │ No exclusion condition needed              │
+# │ <option>.tags       │ string | list        │ []          │ No downstream variable checks these tags   │
+# └─────────────────────┴──────────────────────┴─────────────┴────────────────────────────────────────────┘
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# Ordering rules
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Variables are evaluated top-to-bottom. A `when` expression on an option can
+# only reference variables declared ABOVE it in the `variables` block.
+# Referencing a variable that hasn't been resolved yet raises an error.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# `when` / `unless` expression context
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# After each variable resolves, the following names are added to the context:
+#
+#   <varname>         string for single-pick (count: 1 / "choice")
+#                     list  for multi-pick  (count: N / "any" / "multiselect")
+#
+#   <varname>_tags    list of all tags across the picked value(s), in encounter
+#                     order, deduplicated. Always a list (even for single-pick).
+#
+# Example expressions:
+#
+#   season == 'winter'
+#   'cold' in season_tags
+#   'student' in character_tags and 'cold' not in season_tags
+#   time_of_day in ('dusk', 'night')
+#   len(accessories) > 0
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# Partial YAML (Power Prompt Partial node)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# A partial contributes `variables:` and `fragments:` to any main node it is
+# wired into. It uses the same syntax for both keys as the main YAML.
+# The `prompt:` key is not meaningful in a partial and is ignored.
+#
+# Merge order:
+#   include_1 → include_2 → … → main YAML
+#   (main YAML always wins on name collision for both variables and fragments)
+#
+# Example partial:
+#
+#   variables:
+#     city:
+#       type: select
+#       count: 1
+#       options: [Tokyo, Paris, New York]
+#
+#     time_of_day:
+#       type: select
+#       count: 1
+#       options: [morning, afternoon, night]
+#
+#   fragments:
+#     location: "{{ city }} at {{ time_of_day }}"
+#
+# After wiring this partial into a main node, the main prompt can use:
+#   {{ city }}, {{ time_of_day }}  — variables from the partial
+#   {{ fragment.location }}         — fragment rendered by the partial
