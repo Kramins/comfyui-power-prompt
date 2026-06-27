@@ -1,0 +1,10 @@
+tests/
+docs/
+examples/
+scripts/
+node_modules/
+conftest.py
+pytest.ini
+docker-compose.yml
+package.json
+package-lock.json
