@@ -1,6 +1,6 @@
 [project]
 name = "power-prompt"
-version = "0.1.0"
+version = "0.1.1"
 description = "ComfyUI node for building rich, conditional prompts with a variable system, weighted random selection, tag-based filtering, and Jinja2 templating."
 license = {text = "GPL-3.0-or-later"}
 authors = [{name = "Chris Kramins", email = "chris@kramins.ca"}]
