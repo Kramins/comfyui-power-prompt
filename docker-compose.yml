@@ -1,6 +1,6 @@
 services:
   comfyui:
-    image: ghcr.io/kramins/comfyui-amd:0.25.1
+    image: ghcr.io/kramins/comfyui-amd:0.26.0
     ports:
       - "8888:8188"
     restart: no
