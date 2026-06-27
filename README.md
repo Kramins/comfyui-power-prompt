@@ -1,5 +1,7 @@
 # Power Prompt
 
+> **A note from me:** I built this mostly for myself - I kept running into the same frustration with other prompt nodes: either too little control or too much friction to use comfortably. I wanted a clean UI that made it fun to experiment with options, and I may have gotten a little carried away. It's a hobby project, but I'm genuinely open to feature requests and bug reports.
+
 A ComfyUI node for building rich, dynamic prompts from a simple YAML definition. Define named variables with weighted options, conditional filtering, and Jinja2 templating — then let the node assemble your prompt at generation time.
 
 ## Features
