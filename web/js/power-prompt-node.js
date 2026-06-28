@@ -388,8 +388,15 @@ function getIncludeRawStrings(node) {
         const link = app.graph.links[input.link];
         if (!link) continue;
         const srcNode = app.graph.getNodeById(link.origin_id);
-        const w = srcNode?.widgets?.find(w => w.name === "yaml_input");
-        if (w?.value) parts.push(w.value);
+        if (!srcNode) continue;
+        if (srcNode.mode === 4) continue; // bypassed — exclude from UI definition
+        if (srcNode.type === "PowerPromptFilePartial") {
+            const fileWidget = srcNode.widgets?.find(w => w.name === "partial_file");
+            if (fileWidget?.value) parts.push(`imports:\n  - ${fileWidget.value}`);
+        } else {
+            const w = srcNode.widgets?.find(w => w.name === "yaml_input");
+            if (w?.value) parts.push(w.value);
+        }
     }
     return parts;
 }
@@ -561,8 +568,9 @@ function setupPowerPromptPanel(node) {
             const connected = isYamlConnected();
             const yamlH = connected ? 0 : YAML_MIN_HEIGHT;
             const controlsH = varsSection.scrollHeight || 0;
+            const headerH = varsHeader.style.display !== "none" ? (varsHeader.scrollHeight || 0) : 0;
             const gap = (!connected && controlsH > 0) ? 6 : 0;
-            return yamlH + gap + controlsH;
+            return yamlH + gap + headerH + controlsH;
         },
         hideOnZoom: false,
     });
@@ -718,6 +726,9 @@ async function rebuildVarControls(varsSection, yamlText, currentVars, node) {
             } else if (ctrl.widget === "checkboxes") {
                 const ms = existing.querySelector(".pp-multiselect");
                 if (ms) updateCheckboxes(ms, ctrl.options, currentVars[ctrl.name]);
+            } else if (ctrl.widget === "text") {
+                const inp = existing.querySelector("input[type=text]");
+                if (inp) inp.value = String(currentVars[ctrl.name] ?? "");
             }
             varsSection.appendChild(existing);
         } else {
@@ -793,7 +804,6 @@ function createDropdown(options, savedValue) {
 }
 
 function updateSelectOptions(sel, options, savedValue) {
-    const prev = sel.value;
     sel.innerHTML = "";
     for (const opt of ["random", ...options]) {
         const o = document.createElement("option");
@@ -802,8 +812,7 @@ function updateSelectOptions(sel, options, savedValue) {
         o.title = opt;
         sel.appendChild(o);
     }
-    const restore = savedValue ?? prev;
-    sel.value = (restore && (restore === "random" || options.includes(restore))) ? restore : "random";
+    sel.value = (savedValue && (savedValue === "random" || options.includes(savedValue))) ? savedValue : "random";
 }
 
 // ── Checkbox group (count>1 or any, small list) ───────────────────────────────
@@ -818,18 +827,13 @@ function createCheckboxGroup(options, savedArr) {
 function updateCheckboxes(container, options, savedValue) {
     const savedArr = Array.isArray(savedValue) ? savedValue : [];
     const savedSet = new Set(savedArr);
-    const prev = {};
-    for (const lbl of container.querySelectorAll("label")) {
-        const cb = lbl.querySelector("input");
-        if (cb) prev[cb.value] = cb.checked;
-    }
     container.innerHTML = "";
     for (const opt of options) {
         const lbl = document.createElement("label");
         const cb = document.createElement("input");
         cb.type = "checkbox";
         cb.value = opt;
-        cb.checked = savedArr.length > 0 ? savedSet.has(opt) : (prev[opt] ?? false);
+        cb.checked = savedSet.has(opt);
         lbl.title = opt;
         lbl.appendChild(cb);
         lbl.appendChild(document.createTextNode(truncateOption(opt)));
@@ -1097,16 +1101,9 @@ function setupFilePartialPanel(node) {
     injectStyles();
 
     // partial_file is a COMBO — ComfyUI renders the native dropdown for us.
-    // yaml_input is a hidden cache that getIncludeRawStrings reads so the main node
-    // can forward the file content to the /power_prompt/ui_definition endpoint.
+    // getIncludeRawStrings reads partial_file.value directly and builds an
+    // `imports:` stub, so no file content caching is needed here.
     const comboWidget = node.widgets?.find(w => w.name === "partial_file");
-    const yamlWidget  = node.widgets?.find(w => w.name === "yaml_input");
-
-    if (yamlWidget) {
-        yamlWidget.hidden = true;
-        yamlWidget.computedHeight = 0;
-        yamlWidget.draw = () => {};
-    }
 
     // ── Status + reload DOM widget ────────────────────────────────────────────
 
@@ -1147,28 +1144,12 @@ function setupFilePartialPanel(node) {
         statusLine.style.color = isError ? "#e06c75" : "#888";
     };
 
-    // ── File load logic ───────────────────────────────────────────────────────
+    // ── File select logic ─────────────────────────────────────────────────────
 
-    const notifyConnectedMainNodes = () => _notifyConnectedMainNodes(node);
-
-    const loadFile = async (filename) => {
+    const selectFile = (filename) => {
         if (!filename || filename === "") { setStatus(""); return; }
-        setStatus("Loading…");
-        try {
-            const res = await fetch(
-                `/power_prompt/read_file?path=${encodeURIComponent(filename)}`
-            );
-            const data = await res.json();
-            if (data.error) {
-                setStatus(`Error: ${data.error}`, true);
-            } else {
-                if (yamlWidget) yamlWidget.value = data.content;
-                setStatus(`Loaded • ${filename}`);
-                notifyConnectedMainNodes();
-            }
-        } catch (e) {
-            setStatus(`Error: ${e.message}`, true);
-        }
+        setStatus(filename);
+        _notifyConnectedMainNodes(node);
     };
 
     // ── Upload logic ──────────────────────────────────────────────────────────
@@ -1194,15 +1175,15 @@ function setupFilePartialPanel(node) {
                 }
                 comboWidget.value = data.filename;
             }
-            await loadFile(data.filename);
+            selectFile(data.filename);
         } catch (e) {
             setStatus(`Upload failed: ${e.message}`, true);
         }
     });
 
-    // Hook the native COMBO widget so a dropdown change triggers a file load.
-    if (comboWidget) comboWidget.callback = (value) => loadFile(value);
-    reloadBtn.addEventListener("click", () => loadFile(comboWidget?.value ?? ""));
+    // Hook the native COMBO widget so a dropdown change triggers a notify.
+    if (comboWidget) comboWidget.callback = (value) => selectFile(value);
+    reloadBtn.addEventListener("click", () => selectFile(comboWidget?.value ?? ""));
 
     // ── DOM widget (status row only — combo rendered natively above it) ───────
 
@@ -1218,7 +1199,7 @@ function setupFilePartialPanel(node) {
     const origOnConfigure = node.onConfigure?.bind(node);
     node.onConfigure = function (data) {
         origOnConfigure?.(data);
-        if (comboWidget?.value) loadFile(comboWidget.value);
+        if (comboWidget?.value) selectFile(comboWidget.value);
     };
 }
 

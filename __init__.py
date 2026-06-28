@@ -29,10 +29,6 @@ try:
         {".yaml", ".yml"},
     )
 
-    def _in_partials_dir(p: pathlib.Path) -> bool:
-        """Return True iff resolved path p is inside the registered partials directory."""
-        return str(p.resolve()).startswith(str(pathlib.Path(_partials_dir).resolve()))
-
     @PromptServer.instance.routes.post("/power_prompt/upload_partial")
     async def _pp_upload_partial(request):
         reader = await request.multipart()
@@ -64,23 +60,6 @@ try:
             return web.json_response({"controls": [], "error": f"Invalid request: {e}"}, status=400)
         result = build_ui_definition(req.yaml, req.includes)
         return web.json_response(result.model_dump())
-
-    @PromptServer.instance.routes.get("/power_prompt/read_file")
-    async def _pp_read_file(request):
-        name = request.query.get("path", "").strip()
-        if not name:
-            return web.json_response({"content": None, "error": "No filename provided"})
-        resolved = folder_paths.get_full_path("power_prompt_partials", name)
-        if not resolved:
-            return web.json_response({"content": None, "error": f"File not found: {name}"})
-        p = pathlib.Path(resolved)
-        if not _in_partials_dir(p):
-            return web.json_response({"content": None, "error": "Access denied"})
-        try:
-            content = p.read_text(encoding="utf-8")
-            return web.json_response({"content": content, "error": None})
-        except OSError as e:
-            return web.json_response({"content": None, "error": str(e)})
 
 except Exception as e:
     logger.warning("Power Prompt: failed to register routes/folder: %s", e)

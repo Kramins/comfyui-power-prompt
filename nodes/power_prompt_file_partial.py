@@ -27,12 +27,6 @@ class PowerPromptFilePartial:
             "required": {
                 "partial_file": (files or [""],),
             },
-            "optional": {
-                # yaml_input is kept in sync by the frontend after each file load so that
-                # getIncludeRawStrings on connected main nodes can forward the content to the
-                # /power_prompt/ui_definition endpoint. generate() always reads fresh from disk.
-                "yaml_input": ("STRING", {"default": "", "multiline": True, "hidden": True}),
-            },
         }
 
     def generate(self, partial_file, yaml_input=""):
