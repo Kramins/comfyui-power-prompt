@@ -121,6 +121,8 @@ variables:
         # Available names:
         #   <varname>        the resolved string (single-pick) or list (multi-pick)
         #   <varname>_tags   list of tags from the resolved value(s)
+        #   tags             accumulated list of every tag emitted so far across all
+        #                    resolved variables, deduplicated in encounter order
         #
         # Available functions: len, any, all, min, max, str, int, float, bool,
         #                      abs, round
@@ -281,10 +283,21 @@ fragments:
 #   <varname>_tags    list of all tags across the picked value(s), in encounter
 #                     order, deduplicated. Always a list (even for single-pick).
 #
+#   tags              accumulated list of every tag emitted by ALL variables
+#                     resolved so far, deduplicated in first-encounter order.
+#                     Grows as each variable resolves — a variable's `when`/`unless`
+#                     expressions see only the tags from variables above it.
+#                     Also available in `fragments:` and `prompt:` after all
+#                     variables resolve (at that point it contains every tag).
+#
+#                     Note: if you name a variable "tags", this synthetic name is
+#                     suppressed and your variable's value takes its place.
+#
 # Example expressions:
 #
 #   season == 'winter'
 #   'cold' in season_tags
+#   'cold' in tags                          # true if any earlier variable emitted 'cold'
 #   'student' in character_tags and 'cold' not in season_tags
 #   time_of_day in ('dusk', 'night')
 #   len(accessories) > 0

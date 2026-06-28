@@ -196,6 +196,7 @@ unless: "'rainy' in weather_tags"
 |---|---|
 | `<varname>` | Resolved string (single-pick) or list (multi-pick) |
 | `<varname>_tags` | List of tags from the resolved value(s), deduplicated in encounter order |
+| `tags` | Accumulated list of every tag emitted by all variables resolved so far, deduplicated in encounter order. Useful when you need to branch on any tag regardless of which variable produced it |
 
 **Available functions:** `len`, `any`, `all`, `min`, `max`, `str`, `int`, `float`, `bool`, `abs`, `round`
 
@@ -204,6 +205,7 @@ unless: "'rainy' in weather_tags"
 - Generator expressions (`any(x for x in y)`) are not supported — use `in` membership checks instead
 - Both `when` and `unless` can appear on the same option — the option is included only if `when` is true **and** `unless` is false
 - Variables must be declared **above** any variable whose `when`/`unless` references them
+- `tags` and all `<varname>_tags` lists are also available in `fragments:` and the `prompt:` template after all variables resolve
 
 ---
 
