@@ -143,7 +143,7 @@ class PowerPromptNode:
                         else ([str(raw_tags)] if raw_tags else []))
                 values = raw_value if isinstance(raw_value, list) else [raw_value]
                 for v in values:
-                    if v is None:
+                    if v is None or v == "":
                         continue
                     v_str = str(v)
                     all_opts.append((v_str, weight, when, unless))
@@ -236,7 +236,7 @@ class PowerPromptNode:
                 # Step 4 — pick value(s) and write into both contexts.
                 # Single pick: use user value if provided, otherwise sample with seeded RNG.
                 if is_single:
-                    if user_value and user_value != "random":
+                    if user_value is not None and user_value != "random":
                         val = str(user_value)
                     else:
                         rng = _var_rng(seed, var_name)
@@ -251,7 +251,7 @@ class PowerPromptNode:
 
                 # "any" pick: all selections come from the user; no random sampling.
                 elif is_any:
-                    selected = [str(v) for v in (user_value if isinstance(user_value, list) else [])]
+                    selected = [str(v) for v in (user_value if isinstance(user_value, list) else ([user_value] if user_value is not None else []))]
                     context[var_name] = ", ".join(selected)
                     eval_context[var_name] = selected
                     eval_context[f"{var_name}_tags"] = _merge_tags(selected, tags_by_value)
