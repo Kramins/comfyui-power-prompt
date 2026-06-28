@@ -53,6 +53,18 @@ try:
         except OSError as e:
             return web.json_response({"filename": None, "error": str(e)})
 
+    from .nodes.ui_definition import UIDefinitionRequest, build_ui_definition
+
+    @PromptServer.instance.routes.post("/power_prompt/ui_definition")
+    async def _pp_ui_definition(request):
+        try:
+            body = await request.json()
+            req = UIDefinitionRequest.model_validate(body)
+        except Exception as e:
+            return web.json_response({"controls": [], "error": f"Invalid request: {e}"}, status=400)
+        result = build_ui_definition(req.yaml, req.includes)
+        return web.json_response(result.model_dump())
+
     @PromptServer.instance.routes.get("/power_prompt/read_file")
     async def _pp_read_file(request):
         name = request.query.get("path", "").strip()

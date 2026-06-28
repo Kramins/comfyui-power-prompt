@@ -11,6 +11,7 @@ import pytest
 from nodes.power_prompt import PowerPromptNode
 from nodes.power_prompt_partial import PowerPromptPartial
 from nodes.power_prompt_file_partial import PowerPromptFilePartial
+from nodes.ui_definition import build_ui_definition, UIDefinitionResponse
 from nodes.utils import (
     _evaluate_when,
     _merge_include_variables,
@@ -2411,3 +2412,276 @@ class TestImports:
         )
         prompt, _ = _generate_with_imports(yaml_input, include_1=wired_content)
         assert prompt == "1girl, energetic, option_a"
+
+
+# ---------------------------------------------------------------------------
+# TestUIDefinition
+# ---------------------------------------------------------------------------
+
+
+class TestUIDefinition:
+
+    # --- widget type mapping ---
+
+    def test_select_count_1_is_dropdown(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: 1\n    options: [a, b]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        assert resp.error is None
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.widget == "dropdown"
+
+    def test_select_count_any_is_checkboxes(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: any\n    options: [a, b]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.widget == "checkboxes"
+
+    def test_select_count_range_is_checkboxes(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: 1-3\n    options: [a, b, c]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.widget == "checkboxes"
+
+    def test_select_count_gt1_is_checkboxes(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: 2\n    options: [a, b, c]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.widget == "checkboxes"
+
+    def test_multiselect_alias_is_checkboxes(self):
+        yaml_input = "variables:\n  x:\n    type: multiselect\n    options: [a, b]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.widget == "checkboxes"
+
+    def test_choice_alias_is_dropdown(self):
+        yaml_input = "variables:\n  x:\n    type: choice\n    options: [a, b]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.widget == "dropdown"
+
+    def test_text_type_is_text_widget(self):
+        yaml_input = "variables:\n  note:\n    type: text\nprompt: '{{ note }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "note")
+        assert ctrl.widget == "text"
+        assert ctrl.options == []
+
+    # --- label, group, hidden ---
+
+    def test_custom_label(self):
+        yaml_input = "variables:\n  art_style:\n    type: select\n    label: 'Art Style'\n    options: [anime]\nprompt: '{{ art_style }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "art_style")
+        assert ctrl.label == "Art Style"
+
+    def test_label_derived_from_name(self):
+        yaml_input = "variables:\n  art_style:\n    type: select\n    options: [anime]\nprompt: '{{ art_style }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "art_style")
+        assert ctrl.label == "art style"
+
+    def test_group_field(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    group: 'Character'\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.group == "Character"
+
+    def test_no_group_is_none(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.group is None
+
+    def test_hidden_true(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    hidden: true\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.hidden is True
+
+    def test_hidden_false_by_default(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.hidden is False
+
+    # --- options extraction ---
+
+    def test_options_plain_strings(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    options: [alpha, beta, gamma]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.options == ["alpha", "beta", "gamma"]
+
+    def test_options_with_weight_and_when_stripped(self):
+        yaml_input = (
+            "variables:\n"
+            "  x:\n"
+            "    type: select\n"
+            "    options:\n"
+            "      - value: a\n"
+            "        weight: 3\n"
+            "        when: \"season == 'winter'\"\n"
+            "      - value: b\n"
+            "        tags: [tag1]\n"
+            "prompt: '{{ x }}'\n"
+        )
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.options == ["a", "b"]
+
+    def test_multi_value_option_expanded(self):
+        yaml_input = (
+            "variables:\n"
+            "  x:\n"
+            "    type: select\n"
+            "    options:\n"
+            "      - value:\n"
+            "          - opt1\n"
+            "          - opt2\n"
+            "prompt: '{{ x }}'\n"
+        )
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.options == ["opt1", "opt2"]
+
+    # --- variable order and priority ---
+
+    def test_controls_in_declaration_order(self):
+        yaml_input = (
+            "variables:\n"
+            "  first:\n    type: select\n    options: [a]\n"
+            "  second:\n    type: text\n"
+            "  third:\n    type: select\n    count: any\n    options: [x]\n"
+            "prompt: '{{ first }}'\n"
+        )
+        resp = build_ui_definition(yaml_input, [])
+        names = [c.name for c in resp.controls]
+        assert names == ["first", "second", "third"]
+
+    def test_main_yaml_overrides_wired_include(self):
+        include = "variables:\n  x:\n    type: select\n    options: [from_include]\n"
+        yaml_input = "variables:\n  x:\n    type: select\n    options: [from_main]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [include])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.options == ["from_main"]
+
+    def test_wired_include_variables_appear(self):
+        include = "variables:\n  extra:\n    type: select\n    options: [yes]\n"
+        yaml_input = "variables:\n  x:\n    type: select\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [include])
+        names = [c.name for c in resp.controls]
+        assert "extra" in names
+
+    # --- imports ---
+
+    def test_imported_variables_appear(self, partials_dir):
+        _write_partial(partials_dir, "base.yaml",
+            "variables:\n  style:\n    type: select\n    options: [anime]\n"
+        )
+        yaml_input = "imports:\n  - base.yaml\nvariables:\n  subject:\n    type: select\n    options: [1girl]\nprompt: '{{ subject }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        names = [c.name for c in resp.controls]
+        assert "style" in names
+        assert "subject" in names
+
+    def test_main_yaml_overrides_import(self, partials_dir):
+        _write_partial(partials_dir, "base.yaml",
+            "variables:\n  x:\n    type: select\n    options: [from_import]\n"
+        )
+        yaml_input = "imports:\n  - base.yaml\nvariables:\n  x:\n    type: select\n    options: [from_main]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.options == ["from_main"]
+
+    def test_wired_include_overrides_import(self, partials_dir):
+        _write_partial(partials_dir, "base.yaml",
+            "variables:\n  x:\n    type: select\n    options: [from_import]\n"
+        )
+        include = "variables:\n  x:\n    type: select\n    options: [from_wired]\n"
+        yaml_input = "imports:\n  - base.yaml\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [include])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.options == ["from_wired"]
+
+    # --- error cases ---
+
+    def test_invalid_yaml_returns_error(self):
+        resp = build_ui_definition(": not valid yaml [", [])
+        assert resp.error is not None
+        assert resp.controls == []
+
+    def test_non_mapping_yaml_returns_error(self):
+        resp = build_ui_definition("- a\n- b\n", [])
+        assert resp.error is not None
+        assert resp.controls == []
+
+    def test_missing_import_file_returns_error(self, partials_dir):
+        yaml_input = "imports:\n  - ghost.yaml\nprompt: 'x'\n"
+        resp = build_ui_definition(yaml_input, [])
+        assert resp.error is not None
+        assert resp.controls == []
+
+    def test_no_variables_key_returns_empty_controls(self):
+        resp = build_ui_definition("prompt: 'hello'\n", [])
+        assert resp.error is None
+        assert resp.controls == []
+
+    def test_response_is_serialisable(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        data = resp.model_dump()
+        assert isinstance(data["controls"], list)
+        assert data["controls"][0]["name"] == "x"
+
+    # --- is_any ---
+
+    def test_is_any_false_for_dropdown(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: 1\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.is_any is False
+
+    def test_is_any_true_for_count_any(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: any\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.is_any is True
+
+    def test_is_any_true_for_multiselect(self):
+        yaml_input = "variables:\n  x:\n    type: multiselect\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.is_any is True
+
+    def test_is_any_false_for_range(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: 1-3\n    options: [a, b, c]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.is_any is False
+
+    # --- count_hint ---
+
+    def test_count_hint_none_for_dropdown(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: 1\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.count_hint is None
+
+    def test_count_hint_none_for_count_any(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: any\n    options: [a]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.count_hint is None
+
+    def test_count_hint_set_for_range(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: 1-3\n    options: [a, b, c]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.count_hint == "1-3"
+
+    def test_count_hint_set_for_fixed_multi(self):
+        yaml_input = "variables:\n  x:\n    type: select\n    count: 2\n    options: [a, b, c]\nprompt: '{{ x }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "x")
+        assert ctrl.count_hint == "2"

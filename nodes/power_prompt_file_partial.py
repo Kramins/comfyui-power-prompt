@@ -29,8 +29,8 @@ class PowerPromptFilePartial:
             },
             "optional": {
                 # yaml_input is kept in sync by the frontend after each file load so that
-                # getIncludeVariables / getIncludeRawYaml on the main node can read partial
-                # variables for building UI controls. generate() always reads fresh from disk.
+                # getIncludeRawStrings on connected main nodes can forward the content to the
+                # /power_prompt/ui_definition endpoint. generate() always reads fresh from disk.
                 "yaml_input": ("STRING", {"default": "", "multiline": True, "hidden": True}),
             },
         }

@@ -379,8 +379,8 @@ function createYamlEditor(parent, initialYaml) {
     };
 }
 
-function getIncludeVariables(node) {
-    const merged = {};
+function getIncludeRawStrings(node) {
+    const parts = [];
     const inputs = (node.inputs ?? [])
         .filter(i => i.name.startsWith("include_") && i.link != null)
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -388,34 +388,35 @@ function getIncludeVariables(node) {
         const link = app.graph.links[input.link];
         if (!link) continue;
         const srcNode = app.graph.getNodeById(link.origin_id);
-        const yamlWidget = srcNode?.widgets?.find(w => w.name === "yaml_input");
-        if (!yamlWidget?.value) continue;
-        try {
-            const doc = parseYAML(yamlWidget.value) ?? {};
-            Object.assign(merged, doc.variables ?? {});
-        } catch (_) {}
+        const w = srcNode?.widgets?.find(w => w.name === "yaml_input");
+        if (w?.value) parts.push(w.value);
     }
-    return merged;
+    return parts;
 }
 
-function getIncludeRawYaml(node) {
-    const parts = [];
-    const inputs = (node.inputs ?? [])
-        .filter(i => i.name.startsWith("include_") && i.link != null)
-        .sort((a, b) => a.name.localeCompare(b.name));
-    for (let i = 0; i < inputs.length; i++) {
-        const link = app.graph.links[inputs[i].link];
-        if (!link) continue;
-        const srcNode = app.graph.getNodeById(link.origin_id);
-        const w = srcNode?.widgets?.find(w => w.name === "yaml_input");
-        if (!w?.value) continue;
-        // Rename all top-level keys (no leading whitespace) to unique names so that
-        // strict YAML parsers don't reject duplicate `variables:` etc. keys.
-        // YAML anchors defined inside are still visible to the rest of the combined document.
-        const renamed = w.value.replace(/^([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/gm, `_pp_${i}_$1$2`);
-        parts.push(renamed);
+async function fetchUIDefinition(yamlText, includeStrings) {
+    try {
+        const res = await fetch("/power_prompt/ui_definition", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ yaml: yamlText, includes: includeStrings }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+    } catch (e) {
+        console.warn("[PowerPrompt] ui_definition fetch failed:", e);
+        return null;
     }
-    return parts.join("\n");
+}
+
+function _notifyConnectedMainNodes(partialNode) {
+    const outputLinks = partialNode.outputs?.[0]?.links ?? [];
+    for (const linkId of outputLinks) {
+        const link = app.graph.links[linkId];
+        if (!link) continue;
+        const target = app.graph.getNodeById(link.target_id);
+        target?.onConnectionsChange?.(1, link.target_slot, true, link, null);
+    }
 }
 
 function ensureIncludeSlots(node) {
@@ -480,7 +481,7 @@ function setupPowerPromptPanel(node) {
     refreshBtn.className = "pp-reset-btn";
     refreshBtn.textContent = "Refresh";
     refreshBtn.addEventListener("click", () => {
-        rebuildVarControls(varsSection, jar.toString(), getVarState(varsSection), node, getIncludeVariables(node));
+        rebuildVarControls(varsSection, jar.toString(), getVarState(varsSection), node);
     });
     varsHeader.appendChild(refreshBtn);
 
@@ -489,7 +490,7 @@ function setupPowerPromptPanel(node) {
     resetBtn.className = "pp-reset-btn";
     resetBtn.textContent = "Reset all";
     resetBtn.addEventListener("click", () => {
-        rebuildVarControls(varsSection, jar.toString(), {}, node, getIncludeVariables(node));
+        rebuildVarControls(varsSection, jar.toString(), {}, node);
     });
     varsHeader.appendChild(resetBtn);
 
@@ -509,7 +510,7 @@ function setupPowerPromptPanel(node) {
     const scheduleRebuild = () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
-            rebuildVarControls(varsSection, jar.toString(), getVarState(varsSection), node, getIncludeVariables(node));
+            rebuildVarControls(varsSection, jar.toString(), getVarState(varsSection), node);
         }, 300);
     };
     jar.onUpdate(code => {
@@ -554,7 +555,7 @@ function setupPowerPromptPanel(node) {
             if (yamlCanvasWidget) jar.updateCode(yamlCanvasWidget.value ?? DEFAULT_YAML);
             let vars = {};
             try { vars = JSON.parse(jsonStr) ?? {}; } catch (_) {}
-            rebuildVarControls(varsSection, jar.toString(), vars, node, getIncludeVariables(node));
+            rebuildVarControls(varsSection, jar.toString(), vars, node);
         },
         getMinHeight() {
             const connected = isYamlConnected();
@@ -594,28 +595,12 @@ function setupPowerPromptPanel(node) {
         if (yamlCanvasWidget) jar.updateCode(yamlCanvasWidget.value ?? DEFAULT_YAML);
         updateConnectionState();
         ensureIncludeSlots(node);
-        rebuildVarControls(varsSection, jar.toString(), getVarState(varsSection), node, getIncludeVariables(node));
+        rebuildVarControls(varsSection, jar.toString(), getVarState(varsSection), node);
     };
 
     updateConnectionState();
     ensureIncludeSlots(node);
-    rebuildVarControls(varsSection, jar.toString(), {}, node, getIncludeVariables(node));
-}
-
-// ── Count parsing ─────────────────────────────────────────────────────────────
-
-function parseCount(countStr) {
-    if (!countStr || countStr === "any") return { min: 0, max: Infinity };
-    const s = String(countStr);
-    if (s.includes("-")) {
-        const [a, b] = s.split("-", 2);
-        return {
-            min: a.trim() ? parseInt(a) : 0,
-            max: b.trim() ? parseInt(b) : Infinity,
-        };
-    }
-    const n = parseInt(s);
-    return isNaN(n) ? { min: 0, max: Infinity } : { min: n, max: n };
+    rebuildVarControls(varsSection, jar.toString(), {}, node);
 }
 
 // ── Var state reader ──────────────────────────────────────────────────────────
@@ -624,39 +609,33 @@ function getVarState(varsSection) {
     const vars = {};
     for (const row of varsSection.querySelectorAll(".pp-var-row")) {
         const name = row.dataset.varName;
-        const type = row.dataset.varType;
-        const countStr = row.dataset.varCount;
-        const { min: cMin, max: cMax } = parseCount(countStr);
-        const isSingle = cMin === 1 && cMax === 1;
-        const isAny = !countStr || countStr === "any";
+        const widget = row.dataset.varWidget;
+        const isAny = row.dataset.varIsAny === "true";
 
-        if (type === "select") {
-            if (isSingle) {
-                const searchSel = row.querySelector(".pp-search-select");
-                const sel = row.querySelector("select");
-                let val = null;
-                if (searchSel) {
-                    val = searchSel._ppGetValue?.() ?? null;
-                } else if (sel) {
-                    val = sel.value !== "random" ? sel.value : null;
-                }
-                if (val) vars[name] = val;
-            } else {
-                const chipSel = row.querySelector(".pp-chip-select");
-                const ms = row.querySelector(".pp-multiselect");
-                let selected;
-                if (chipSel) {
-                    selected = chipSel._ppGetSelected?.() ?? [];
-                } else if (ms) {
-                    selected = Array.from(ms.querySelectorAll("input:checked")).map(i => i.value);
-                } else {
-                    selected = [];
-                }
-                // count:any always stored (empty = nothing included in prompt)
-                // count:N omitted when empty → Python uses seed
-                if (selected.length > 0 || isAny) vars[name] = selected;
+        if (widget === "dropdown") {
+            const searchSel = row.querySelector(".pp-search-select");
+            const sel = row.querySelector("select");
+            let val = null;
+            if (searchSel) {
+                val = searchSel._ppGetValue?.() ?? null;
+            } else if (sel) {
+                val = sel.value !== "random" ? sel.value : null;
             }
-        } else if (type === "text") {
+            if (val) vars[name] = val;
+        } else if (widget === "checkboxes") {
+            const chipSel = row.querySelector(".pp-chip-select");
+            const ms = row.querySelector(".pp-multiselect");
+            let selected;
+            if (chipSel) {
+                selected = chipSel._ppGetSelected?.() ?? [];
+            } else if (ms) {
+                selected = Array.from(ms.querySelectorAll("input:checked")).map(i => i.value);
+            } else {
+                selected = [];
+            }
+            // is_any: always store (empty = user wants nothing); range: omit when empty → Python uses seed
+            if (selected.length > 0 || isAny) vars[name] = selected;
+        } else if (widget === "text") {
             const inp = row.querySelector("input[type=text]:not(.pp-chip-search):not(.pp-search-input)");
             if (inp) vars[name] = inp.value;
         }
@@ -664,7 +643,7 @@ function getVarState(varsSection) {
     return vars;
 }
 
-// ── Rebuild controls ──────────────────────────────────────────────────────────
+// ── Rebuild controls ─────────────────────────────────────────────────────────
 
 function createGroupHeader(groupName) {
     const header = document.createElement("div");
@@ -673,39 +652,35 @@ function createGroupHeader(groupName) {
     return header;
 }
 
-function rebuildVarControls(varsSection, yamlText, currentVars, node, extraVars = {}) {
-    let variables = {};
-    try {
-        const prefix = getIncludeRawYaml(node);
-        const combined = prefix ? prefix + "\n" + yamlText : yamlText;
-        variables = parsePromptYAML(combined).variables ?? {};
-    } catch (_) {}
-    variables = { ...extraVars, ...variables };
+async function rebuildVarControls(varsSection, yamlText, currentVars, node) {
+    const def = await fetchUIDefinition(yamlText, getIncludeRawStrings(node));
 
-    const all = Object.entries(variables)
-        .filter(([, def]) => def?.type && !def?.hidden)
-        .map(([varName, varDef]) => ({ varName, varDef }));
+    const controls = (def?.error || !def)
+        ? []
+        : def.controls.filter(c => !c.hidden);
+
+    if (!def || def.error) {
+        console.warn("[PowerPrompt] ui_definition:", def?.error ?? "fetch failed");
+    }
 
     // Split into groups (insertion-ordered Map) and ungrouped; groups render first.
     const groupMap = new Map();
     const ungrouped = [];
-    for (const item of all) {
-        const g = item.varDef.group;
-        if (g) {
-            if (!groupMap.has(g)) groupMap.set(g, []);
-            groupMap.get(g).push(item);
+    for (const ctrl of controls) {
+        if (ctrl.group) {
+            if (!groupMap.has(ctrl.group)) groupMap.set(ctrl.group, []);
+            groupMap.get(ctrl.group).push(ctrl);
         } else {
-            ungrouped.push(item);
+            ungrouped.push(ctrl);
         }
     }
 
-    // Flat ordered list: group header + group vars, then ungrouped
     const ordered = [];
     for (const [groupName, vars] of groupMap) {
         ordered.push({ kind: "header", groupName });
-        for (const v of vars) ordered.push({ kind: "var", ...v });
+        for (const ctrl of vars) ordered.push({ kind: "ctrl", ctrl });
     }
-    for (const v of ungrouped) ordered.push({ kind: "var", ...v });
+    for (const ctrl of ungrouped) ordered.push({ kind: "ctrl", ctrl });
 
     // Index existing rows for potential reuse (event listeners are preserved on DOM moves)
     const existingRows = {};
@@ -714,8 +689,6 @@ function rebuildVarControls(varsSection, yamlText, currentVars, node, extraVars 
     }
 
     const prevRowCount = varsSection.children.length;
-
-    // Clear and rebuild in order — group headers are inserted naturally
     varsSection.innerHTML = "";
 
     for (const item of ordered) {
@@ -724,38 +697,31 @@ function rebuildVarControls(varsSection, yamlText, currentVars, node, extraVars 
             continue;
         }
 
-        const { varName, varDef } = item;
-        const type = normaliseType(varDef.type);
-        const countStr = varDef.count != null
-            ? String(varDef.count)
-            : (varDef.type === "multiselect" ? "any" : "1");
-        const options = flattenOptions(varDef.options ?? []).map(normaliseOption);
-        const isLarge = options.length > CHIP_THRESHOLD;
-        const { min: cMin, max: cMax } = parseCount(countStr);
-        const isSingle = cMin === 1 && cMax === 1;
-
-        const existing = existingRows[varName];
-        // In-place update: only for simple widgets (dropdown / checkboxes) with unchanged signature
+        const { ctrl } = item;
+        const isLarge = ctrl.options.length > CHIP_THRESHOLD;
+        const existing = existingRows[ctrl.name];
+        const existingIsLarge = existing
+            ? (existing.querySelector(".pp-chip-select") != null
+               || existing.querySelector(".pp-search-select") != null)
+            : false;
+        // In-place update: only for simple widgets with unchanged widget/is_any signature
         const canUpdate = existing
-            && existing.dataset.varType === type
-            && existing.dataset.varCount === countStr
-            && !isLarge;
+            && existing.dataset.varWidget === ctrl.widget
+            && existing.dataset.varIsAny === String(ctrl.is_any)
+            && !isLarge
+            && !existingIsLarge;
 
         if (canUpdate) {
-            if (type === "select") {
-                if (isSingle) {
-                    const sel = existing.querySelector("select");
-                    if (sel) updateSelectOptions(sel, options, currentVars[varName]);
-                } else {
-                    const ms = existing.querySelector(".pp-multiselect");
-                    if (ms) updateCheckboxes(ms, options, currentVars[varName]);
-                }
+            if (ctrl.widget === "dropdown") {
+                const sel = existing.querySelector("select");
+                if (sel) updateSelectOptions(sel, ctrl.options, currentVars[ctrl.name]);
+            } else if (ctrl.widget === "checkboxes") {
+                const ms = existing.querySelector(".pp-multiselect");
+                if (ms) updateCheckboxes(ms, ctrl.options, currentVars[ctrl.name]);
             }
             varsSection.appendChild(existing);
         } else {
-            varsSection.appendChild(
-                createVarRow(varName, type, countStr, options, isLarge, isSingle, varDef, currentVars[varName])
-            );
+            varsSection.appendChild(createVarRow(ctrl, isLarge, currentVars[ctrl.name]));
         }
     }
 
@@ -774,72 +740,41 @@ function rebuildVarControls(varsSection, yamlText, currentVars, node, extraVars 
     }
 }
 
-function normaliseType(t) {
-    if (t === "choice" || t === "multiselect") return "select";
-    return t;
-}
-
-function normaliseOption(o) {
-    return typeof o === "object" ? String(o.value ?? o) : String(o);
-}
-
 const OPTION_DISPLAY_MAX = 48;
 function truncateOption(str) {
     return str.length > OPTION_DISPLAY_MAX ? str.slice(0, OPTION_DISPLAY_MAX - 1) + "…" : str;
 }
 
-// Expand raw YAML options — dict options with value:[...] become individual entries.
-function flattenOptions(rawOptions) {
-    if (!Array.isArray(rawOptions)) return [];
-    const result = [];
-    for (const opt of rawOptions) {
-        if (opt !== null && typeof opt === "object") {
-            const values = Array.isArray(opt.value) ? opt.value : [opt.value ?? ""];
-            for (const v of values) {
-                result.push({ value: String(v), weight: opt.weight ?? 1, when: opt.when, tags: opt.tags });
-            }
-        } else {
-            result.push(String(opt ?? ""));
-        }
-    }
-    return result;
-}
-
 // ── Row factory ───────────────────────────────────────────────────────────────
 
-function createVarRow(varName, type, countStr, options, isLarge, isSingle, varDef, savedValue) {
-    const isAny = !countStr || countStr === "any";
-
+function createVarRow(ctrl, isLarge, savedValue) {
     const row = document.createElement("div");
     row.className = "pp-var-row";
-    row.dataset.varName = varName;
-    row.dataset.varType = type;
-    row.dataset.varCount = countStr;
+    row.dataset.varName = ctrl.name;
+    row.dataset.varWidget = ctrl.widget;
+    row.dataset.varIsAny = String(ctrl.is_any);
 
     const label = document.createElement("span");
     label.className = "pp-var-label";
-    label.textContent = varDef.label ? String(varDef.label) : varName.replace(/_/g, " ");
-    // Show count hint for non-trivial multi-picks
-    if (type === "select" && !isSingle && !isAny) {
+    label.textContent = ctrl.label;
+    if (ctrl.count_hint) {
         const hint = document.createElement("span");
         hint.className = "pp-count-hint";
-        hint.textContent = `pick ${countStr}`;
+        hint.textContent = `pick ${ctrl.count_hint}`;
         label.appendChild(hint);
     }
     row.appendChild(label);
 
-    if (type === "select") {
-        if (isSingle) {
-            row.appendChild(isLarge
-                ? createSearchableDropdown(options, savedValue)
-                : createDropdown(options, savedValue));
-        } else {
-            const savedArr = Array.isArray(savedValue) ? savedValue : [];
-            row.appendChild(isLarge
-                ? createChipSelect(options, savedArr, isAny)
-                : createCheckboxGroup(options, savedArr));
-        }
-    } else if (type === "text") {
+    if (ctrl.widget === "dropdown") {
+        row.appendChild(isLarge
+            ? createSearchableDropdown(ctrl.options, savedValue)
+            : createDropdown(ctrl.options, savedValue));
+    } else if (ctrl.widget === "checkboxes") {
+        const savedArr = Array.isArray(savedValue) ? savedValue : [];
+        row.appendChild(isLarge
+            ? createChipSelect(ctrl.options, savedArr, ctrl.is_any)
+            : createCheckboxGroup(ctrl.options, savedArr));
+    } else if (ctrl.widget === "text") {
         const inp = document.createElement("input");
         inp.type = "text";
         inp.value = String(savedValue ?? "");
@@ -1102,8 +1037,11 @@ function setupPartialPanel(node) {
         yamlCanvasWidget.draw = () => {};
     }
 
+    let partialDebounce = null;
     jar.onUpdate(code => {
         if (yamlCanvasWidget) yamlCanvasWidget.value = code;
+        clearTimeout(partialDebounce);
+        partialDebounce = setTimeout(() => _notifyConnectedMainNodes(node), 300);
     });
 
     const isYamlConnected = () =>
@@ -1159,8 +1097,8 @@ function setupFilePartialPanel(node) {
     injectStyles();
 
     // partial_file is a COMBO — ComfyUI renders the native dropdown for us.
-    // yaml_input is a hidden cache that getIncludeVariables / getIncludeRawYaml
-    // read to build variable controls on any connected main node.
+    // yaml_input is a hidden cache that getIncludeRawStrings reads so the main node
+    // can forward the file content to the /power_prompt/ui_definition endpoint.
     const comboWidget = node.widgets?.find(w => w.name === "partial_file");
     const yamlWidget  = node.widgets?.find(w => w.name === "yaml_input");
 
@@ -1211,17 +1149,7 @@ function setupFilePartialPanel(node) {
 
     // ── File load logic ───────────────────────────────────────────────────────
 
-    const notifyConnectedMainNodes = () => {
-        const outputLinks = node.outputs?.[0]?.links ?? [];
-        for (const linkId of outputLinks) {
-            const link = app.graph.links[linkId];
-            if (!link) continue;
-            const target = app.graph.getNodeById(link.target_id);
-            // Trigger a connections-change so the target re-reads includes and
-            // rebuilds its variable controls.
-            target?.onConnectionsChange?.(1, link.target_slot, true, link, null);
-        }
-    };
+    const notifyConnectedMainNodes = () => _notifyConnectedMainNodes(node);
 
     const loadFile = async (filename) => {
         if (!filename || filename === "") { setStatus(""); return; }
@@ -1294,17 +1222,3 @@ function setupFilePartialPanel(node) {
     };
 }
 
-// ── YAML parser ───────────────────────────────────────────────────────────────
-
-function parsePromptYAML(text) {
-    try {
-        const doc = parseYAML(text) ?? {};
-        if (typeof doc !== "object" || Array.isArray(doc)) return { variables: {}, prompt: "" };
-        return {
-            variables: doc.variables ?? {},
-            prompt: doc.prompt ?? "",
-        };
-    } catch (_) {
-        return { variables: {}, prompt: "" };
-    }
-}
