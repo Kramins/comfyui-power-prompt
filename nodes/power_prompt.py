@@ -104,6 +104,12 @@ class PowerPromptNode:
         context = {}      # Jinja2 template context — always strings
         eval_context = {} # when expression context — strings for single-pick, lists for multi-pick
 
+        _global_tags_seen: set[str] = set()
+        _accumulated_tags: list[str] = []
+        if "tags" not in variables:
+            # Live reference — appends to _accumulated_tags are visible in when/unless expressions.
+            eval_context["tags"] = _accumulated_tags
+
         for var_name, var_def in variables.items():
             if not isinstance(var_def, dict):
                 raise ValueError(f"Variable '{var_name}' definition must be a mapping.")
@@ -198,12 +204,20 @@ class PowerPromptNode:
                     context[var_name] = val
                     eval_context[var_name] = val
                     eval_context[f"{var_name}_tags"] = tags_by_value.get(val, [])
+                    for _t in eval_context[f"{var_name}_tags"]:
+                        if _t not in _global_tags_seen:
+                            _global_tags_seen.add(_t)
+                            _accumulated_tags.append(_t)
 
                 elif is_any:
                     selected = [str(v) for v in (user_value if isinstance(user_value, list) else [])]
                     context[var_name] = ", ".join(selected)
                     eval_context[var_name] = selected
                     eval_context[f"{var_name}_tags"] = _merge_tags(selected, tags_by_value)
+                    for _t in eval_context[f"{var_name}_tags"]:
+                        if _t not in _global_tags_seen:
+                            _global_tags_seen.add(_t)
+                            _accumulated_tags.append(_t)
 
                 else:
                     if isinstance(user_value, list) and len(user_value) > 0:
@@ -215,6 +229,10 @@ class PowerPromptNode:
                     context[var_name] = ", ".join(picked)
                     eval_context[var_name] = picked
                     eval_context[f"{var_name}_tags"] = _merge_tags(picked, tags_by_value)
+                    for _t in eval_context[f"{var_name}_tags"]:
+                        if _t not in _global_tags_seen:
+                            _global_tags_seen.add(_t)
+                            _accumulated_tags.append(_t)
 
             elif var_type == "text":
                 val = str(var_state_dict.get(var_name, ""))
@@ -230,6 +248,8 @@ class PowerPromptNode:
         for k, v in eval_context.items():
             if k.endswith("_tags"):
                 context[k] = v
+        if "tags" not in variables:
+            context["tags"] = list(_accumulated_tags)
 
         # Collect fragments from includes, then let the main doc override.
         all_fragments = _merge_include_fragments(includes)

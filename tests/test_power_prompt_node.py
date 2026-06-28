@@ -1283,6 +1283,120 @@ prompt: |
 
 
 # ---------------------------------------------------------------------------
+# global tags variable
+# ---------------------------------------------------------------------------
+
+
+class TestGlobalTags:
+    def test_single_variable_tags_available(self):
+        yaml = """\
+variables:
+  style:
+    type: select
+    count: 1
+    options:
+      - value: anime
+        tags: [japanese, illustration]
+prompt: "{{ tags | join(', ') }}"
+"""
+        prompt, _ = generate(yaml, {"style": "anime"}, seed=0)
+        assert prompt == "japanese, illustration"
+
+    def test_multi_variable_tags_merged_and_deduplicated(self):
+        yaml = """\
+variables:
+  style:
+    type: select
+    count: 1
+    options:
+      - value: anime
+        tags: [japanese, illustration]
+  season:
+    type: select
+    count: 1
+    options:
+      - value: winter
+        tags: [cold, japanese]
+prompt: "{{ tags | join(', ') }}"
+"""
+        # 'japanese' appears in both variables — must appear only once
+        prompt, _ = generate(yaml, {"style": "anime", "season": "winter"}, seed=0)
+        assert prompt == "japanese, illustration, cold"
+
+    def test_no_tagged_options_gives_empty_list(self):
+        yaml = """\
+variables:
+  style:
+    type: select
+    count: 1
+    options:
+      - plain
+prompt: "{{ tags | join(', ') }}"
+"""
+        prompt, _ = generate(yaml, {"style": "plain"}, seed=0)
+        assert prompt == ""
+
+    def test_tags_available_in_when_expression_for_later_variable(self):
+        yaml = """\
+variables:
+  style:
+    type: select
+    count: 1
+    options:
+      - value: anime
+        tags: [japanese]
+  note:
+    type: select
+    count: 1
+    options:
+      - value: ok
+        when: "'japanese' in tags"
+      - value: fail
+        when: "'japanese' not in tags"
+prompt: "{{ style }}, {{ note }}"
+"""
+        prompt, _ = generate(yaml, {"style": "anime"}, seed=0)
+        assert prompt == "anime, ok"
+
+    def test_tags_available_in_fragments(self):
+        yaml = """\
+variables:
+  style:
+    type: select
+    count: 1
+    options:
+      - value: anime
+        tags: [japanese]
+fragments:
+  tag_line: "{{ tags | join(', ') }}"
+prompt: "{{ style }}, {{ fragment.tag_line }}"
+"""
+        prompt, _ = generate(yaml, {"style": "anime"}, seed=0)
+        assert prompt == "anime, japanese"
+
+    def test_encounter_order_preserved(self):
+        yaml = """\
+variables:
+  a:
+    type: select
+    count: 1
+    options:
+      - value: x
+        tags: [alpha, beta]
+  b:
+    type: select
+    count: 1
+    options:
+      - value: y
+        tags: [gamma, alpha]
+prompt: "{{ tags | join(', ') }}"
+"""
+        # alpha from 'a' wins; 'alpha' from 'b' is deduplicated
+        prompt, _ = generate(yaml, {"a": "x", "b": "y"}, seed=0)
+        assert prompt == "alpha, beta, gamma"
+
+
+# ---------------------------------------------------------------------------
 # _strip_prompt_comments
 # ---------------------------------------------------------------------------
 
