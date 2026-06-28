@@ -228,11 +228,68 @@ Fragments are rendered in declaration order after all variables resolve. Fragmen
 
 ### Partials
 
-Wire one or more **Power Prompt Partial** nodes into a main node's include slots. Each partial contributes `variables:` and `fragments:` that merge into the main node's context — useful for reusable character, location, or style libraries.
+Partials contribute `variables:` and `fragments:` into a main node — useful for reusable character, location, or style libraries. There are two ways to bring a partial into a composition:
+
+**Wired partials** — connect **Power Prompt Partial** or **Power Prompt File Partial** nodes into a main node's `include_1`, `include_2`, … input slots in the ComfyUI graph.
+
+**Inline imports** — declare file dependencies directly inside any YAML with a top-level `imports:` list. Files are resolved from the registered `power-prompt` partials folder (the same folder that **Power Prompt File Partial** uses).
+
+```yaml
+imports:
+  - characters/alice.yaml
+  - styles/anime.yaml
+
+variables:
+  subject:
+    type: select
+    options: [1girl, 1boy]
+
+prompt: |
+  {{ subject }}, {{ fragment.style_block }}
+```
+
+Any YAML — main prompt, wired partial, or imported file — can declare `imports:`. Imports are resolved **transitively**: if an imported file itself has an `imports:` list, those files are loaded too. The same file is never loaded more than once regardless of how many times it appears in the graph (cycles are safe).
+
+#### Merge order and priority
+
+All sources are merged in a fixed order before the prompt renders. The rightmost source wins on any name collision:
 
 ```
-include_1 → include_2 → … → main YAML   (main YAML always wins on name collision)
+imported files  →  wired partials (include_1 … include_N)  →  main YAML
 ```
+
+| Source | Priority | Notes |
+|---|---|---|
+| Imported files | Lowest | Declared via `imports:`; earlier entries in the list lose to later ones |
+| Wired partials | Middle | `include_1` < `include_2` < … (higher number wins) |
+| Main YAML | Highest | Always overrides everything |
+
+This applies to both `variables:` and `fragments:`.
+
+#### Variable resolution order and cross-partial `when`/`unless`
+
+Variables are **resolved in the same order** as the merge order above — wired-partial variables are evaluated before imported variables. This matters for cross-partial `when`/`unless` expressions:
+
+```yaml
+# character.yaml (wired as include_1) — defines char_archetype with tags
+variables:
+  char_archetype:
+    type: select
+    options:
+      - value: student
+        tags: [student]
+
+# action-pose.yaml (imported) — options filtered by char_archetype_tags
+variables:
+  action:
+    type: select
+    options:
+      - value: studying, surrounded by books
+        when: "'student' in char_archetype_tags"   # ← works because wired partials
+      - value: gazing into the distance             #   resolve before imports
+```
+
+Because wired partials resolve first, their tags are already in `eval_context` when imported variables are processed. **If you need a variable defined in a wired partial to gate options in an imported file, always supply that variable via a wired partial, not another import.**
 
 The `prompt:` key is not meaningful in a partial and is ignored.
 

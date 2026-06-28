@@ -7,6 +7,7 @@ from jinja2 import BaseLoader, Environment, StrictUndefined
 
 from .utils import (
     _evaluate_when,
+    _load_partials_file,
     _merge_include_fragments,
     _merge_include_variables,
     _merge_tags,
@@ -18,6 +19,29 @@ from .utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _extract_import_paths(content: str) -> list[str]:
+    """Return the list of paths declared under an `imports:` key in a YAML content string.
+
+    Returns [] if the key is absent or the content is not a mapping. Raises ValueError
+    if `imports:` is present but not a list.
+    """
+    try:
+        doc = yaml.safe_load(content)
+    except yaml.YAMLError:
+        return []
+    if not isinstance(doc, dict):
+        return []
+    raw = doc.get("imports")
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ValueError(
+            f"'imports' must be a list of file paths, got {type(raw).__name__!r}."
+        )
+    return [str(item).strip() for item in raw if item and str(item).strip()]
+
 
 DEFAULT_YAML = """\
 variables:
@@ -88,13 +112,54 @@ class PowerPromptNode:
         except json.JSONDecodeError:
             return {}
 
+    def _collect_imports(self, yaml_input: str, wired_includes: list[str]) -> list[str]:
+        """Walk the import graph (DFS post-order) and return file contents in dependency order.
+
+        Deduplication via seen_paths prevents redundant loads and breaks cycles.
+        Seed paths come from wired-include `imports:` keys first, then the main YAML's.
+        """
+        seen: set[str] = set()
+        result: list[str] = []
+
+        def dfs(path: str) -> None:
+            if path in seen:
+                return
+            seen.add(path)
+            content = _load_partials_file(path)
+            for child in _extract_import_paths(content):
+                dfs(child)
+            result.append(content)
+
+        seed_paths: list[str] = []
+        for inc in wired_includes:
+            seed_paths.extend(_extract_import_paths(inc))
+        seed_paths.extend(_extract_import_paths(yaml_input))
+
+        for path in seed_paths:
+            dfs(path)
+
+        return result
+
     def _load_and_parse_yaml(
         self, yaml_input: str, kwargs: dict
     ) -> tuple[dict, dict, str, list[str]]:
         """Collect include files, combine them with the main YAML, parse the document,
         and return (doc, variables, prompt_template, includes)."""
-        includes = [v for k, v in sorted(kwargs.items()) if k.startswith("include_") and v]
-        base_variables = _merge_include_variables(includes)
+        wired_includes = [v for k, v in sorted(kwargs.items()) if k.startswith("include_") and v]
+        import_includes = self._collect_imports(yaml_input, wired_includes)
+        includes = import_includes + wired_includes
+
+        # Wired-include variables must be in the dict BEFORE imported variables so they
+        # are resolved first. Imported variables' when/unless expressions may reference
+        # tags from wired-include variables (e.g. char_archetype_tags), which only exist
+        # in eval_context once those variables have been resolved.
+        # Wired includes also take priority over imports for same-named variables.
+        _wired_vars = _merge_include_variables(wired_includes)
+        _import_vars = _merge_include_variables(import_includes)
+        base_variables = dict(_wired_vars)
+        for k, v in _import_vars.items():
+            if k not in base_variables:
+                base_variables[k] = v
 
         # Prepend partial texts so YAML anchors defined in partials are visible when the
         # main YAML is parsed. Duplicate top-level keys (e.g. `variables:`) resolve to the

@@ -2015,20 +2015,18 @@ fragments:
   location: "{{ city }}, vibrant streets"
 """
 
-    def test_happy_path(self, tmp_path):
+    def test_happy_path(self, partials_dir):
         """Loads a valid partial YAML file and returns its content."""
-        f = tmp_path / "partial.yaml"
-        f.write_text(self.VALID_YAML, encoding="utf-8")
+        (partials_dir / "partial.yaml").write_text(self.VALID_YAML, encoding="utf-8")
         node = PowerPromptFilePartial()
-        result = node.generate(partial_file=str(f), yaml_input="")
+        result = node.generate(partial_file="partial.yaml", yaml_input="")
         assert result == (self.VALID_YAML,)
 
-    def test_content_feeds_into_main_node(self, tmp_path):
+    def test_content_feeds_into_main_node(self, partials_dir):
         """Content from the file partial can be used by PowerPromptNode as an include."""
-        f = tmp_path / "partial.yaml"
-        f.write_text(self.VALID_YAML, encoding="utf-8")
+        (partials_dir / "partial.yaml").write_text(self.VALID_YAML, encoding="utf-8")
         node = PowerPromptFilePartial()
-        (content,) = node.generate(partial_file=str(f), yaml_input="")
+        (content,) = node.generate(partial_file="partial.yaml", yaml_input="")
 
         main = PowerPromptNode()
         prompt, _ = main.generate(
@@ -2039,48 +2037,377 @@ fragments:
         )
         assert prompt == "Tokyo, vibrant streets"
 
-    def test_file_not_found(self, tmp_path):
+    def test_file_not_found(self, partials_dir):
         node = PowerPromptFilePartial()
-        with pytest.raises(ValueError, match="file not found"):
-            node.generate(partial_file=str(tmp_path / "missing.yaml"), yaml_input="")
+        with pytest.raises(ValueError, match="not found"):
+            node.generate(partial_file="missing.yaml", yaml_input="")
 
     def test_empty_path_raises(self):
         node = PowerPromptFilePartial()
         with pytest.raises(ValueError, match="no file path provided"):
             node.generate(partial_file="", yaml_input="")
 
-    def test_invalid_yaml_raises(self, tmp_path):
-        f = tmp_path / "bad.yaml"
-        f.write_text(": this is not valid yaml [", encoding="utf-8")
+    def test_invalid_yaml_raises(self, partials_dir):
+        (partials_dir / "bad.yaml").write_text(": this is not valid yaml [", encoding="utf-8")
         node = PowerPromptFilePartial()
         with pytest.raises(ValueError, match="invalid YAML"):
-            node.generate(partial_file=str(f), yaml_input="")
+            node.generate(partial_file="bad.yaml", yaml_input="")
 
-    def test_non_mapping_yaml_raises(self, tmp_path):
-        f = tmp_path / "list.yaml"
-        f.write_text("- a\n- b\n", encoding="utf-8")
+    def test_non_mapping_yaml_raises(self, partials_dir):
+        (partials_dir / "list.yaml").write_text("- a\n- b\n", encoding="utf-8")
         node = PowerPromptFilePartial()
         with pytest.raises(ValueError, match="must be a YAML mapping"):
-            node.generate(partial_file=str(f), yaml_input="")
+            node.generate(partial_file="list.yaml", yaml_input="")
 
-    def test_validates_variables_is_mapping(self, tmp_path):
-        f = tmp_path / "bad_vars.yaml"
-        f.write_text("variables: not a dict\n", encoding="utf-8")
+    def test_validates_variables_is_mapping(self, partials_dir):
+        (partials_dir / "bad_vars.yaml").write_text("variables: not a dict\n", encoding="utf-8")
         node = PowerPromptFilePartial()
         with pytest.raises(ValueError, match="'variables'.*must be a mapping"):
-            node.generate(partial_file=str(f), yaml_input="")
+            node.generate(partial_file="bad_vars.yaml", yaml_input="")
 
-    def test_validates_fragment_jinja2(self, tmp_path):
-        f = tmp_path / "bad_frag.yaml"
-        f.write_text('fragments:\n  broken: "{{ unclosed"\n', encoding="utf-8")
+    def test_validates_fragment_jinja2(self, partials_dir):
+        (partials_dir / "bad_frag.yaml").write_text('fragments:\n  broken: "{{ unclosed"\n', encoding="utf-8")
         node = PowerPromptFilePartial()
         with pytest.raises(ValueError, match="fragment 'broken'"):
-            node.generate(partial_file=str(f), yaml_input="")
+            node.generate(partial_file="bad_frag.yaml", yaml_input="")
 
-    def test_yaml_input_arg_is_ignored(self, tmp_path):
+    def test_yaml_input_arg_is_ignored(self, partials_dir):
         """yaml_input kwarg (the JS cache) has no effect — file content wins."""
-        f = tmp_path / "real.yaml"
-        f.write_text(self.VALID_YAML, encoding="utf-8")
+        (partials_dir / "real.yaml").write_text(self.VALID_YAML, encoding="utf-8")
         node = PowerPromptFilePartial()
-        result = node.generate(partial_file=str(f), yaml_input="variables: {}\n")
+        result = node.generate(partial_file="real.yaml", yaml_input="variables: {}\n")
         assert result == (self.VALID_YAML,)
+
+
+# ---------------------------------------------------------------------------
+# TestImports
+# ---------------------------------------------------------------------------
+
+import sys
+import types
+
+
+@pytest.fixture
+def partials_dir(tmp_path, monkeypatch):
+    """Patch folder_paths so import resolution looks inside tmp_path.
+
+    Mirrors the ComfyUI power_prompt_partials folder for test isolation.
+    """
+    mock_fp = types.ModuleType("folder_paths")
+    mock_fp.get_full_path = lambda folder, name: (
+        str(tmp_path / name) if (tmp_path / name).exists() else None
+    )
+    monkeypatch.setitem(sys.modules, "folder_paths", mock_fp)
+    return tmp_path
+
+
+def _write_partial(base_dir, name: str, content: str) -> str:
+    """Write a partial YAML file into base_dir and return its relative name."""
+    p = base_dir / name
+    p.write_text(content, encoding="utf-8")
+    return name
+
+
+def _generate_with_imports(yaml_input: str, var_state: dict | None = None, seed: int = 0, **includes):
+    node = PowerPromptNode()
+    return node.generate(
+        yaml_input=yaml_input,
+        var_state=json.dumps(var_state or {}),
+        seed=seed,
+        **includes,
+    )
+
+
+class TestImports:
+    def test_no_imports_key_unchanged(self):
+        """Existing YAML without imports: works as before."""
+        yaml_input = (
+            "variables:\n"
+            "  x:\n"
+            "    type: select\n"
+            "    options: [hello]\n"
+            "prompt: '{{ x }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "hello"
+
+    def test_single_import_loads_variables(self, partials_dir):
+        _write_partial(partials_dir, "base.yaml",
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [anime]\n"
+        )
+        yaml_input = (
+            "imports:\n  - base.yaml\n"
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ style }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "1girl, anime"
+
+    def test_single_import_loads_fragments(self, partials_dir):
+        _write_partial(partials_dir, "frags.yaml",
+            "fragments:\n"
+            "  quality: masterpiece, best quality\n"
+        )
+        yaml_input = (
+            "imports:\n  - frags.yaml\n"
+            "variables:\n"
+            "  x:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ x }}, {{ fragment.quality }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "1girl, masterpiece, best quality"
+
+    def test_multiple_imports_merged(self, partials_dir):
+        """Later import overrides earlier import on key collision."""
+        _write_partial(partials_dir, "a.yaml",
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [oil painting]\n"
+        )
+        _write_partial(partials_dir, "b.yaml",
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [anime]\n"
+        )
+        yaml_input = (
+            "imports:\n  - a.yaml\n  - b.yaml\n"
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ style }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "1girl, anime"
+
+    def test_duplicate_import_deduped(self, partials_dir):
+        """Same file listed twice is loaded only once."""
+        _write_partial(partials_dir, "base.yaml",
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [anime]\n"
+        )
+        yaml_input = (
+            "imports:\n  - base.yaml\n  - base.yaml\n"
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ style }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "1girl, anime"
+
+    def test_transitive_import(self, partials_dir):
+        """A imports B, B imports C — C's variables are available."""
+        _write_partial(partials_dir, "c.yaml",
+            "variables:\n"
+            "  mood:\n"
+            "    type: select\n"
+            "    options: [happy]\n"
+        )
+        _write_partial(partials_dir, "b.yaml",
+            "imports:\n  - c.yaml\n"
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [anime]\n"
+        )
+        yaml_input = (
+            "imports:\n  - b.yaml\n"
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ style }}, {{ mood }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "1girl, anime, happy"
+
+    def test_diamond_import_deduped(self, partials_dir):
+        """A imports B and C, both import D — D loaded exactly once."""
+        _write_partial(partials_dir, "d.yaml",
+            "variables:\n"
+            "  base:\n"
+            "    type: select\n"
+            "    options: [base_val]\n"
+        )
+        _write_partial(partials_dir, "b.yaml", "imports:\n  - d.yaml\n")
+        _write_partial(partials_dir, "c.yaml", "imports:\n  - d.yaml\n")
+        yaml_input = (
+            "imports:\n  - b.yaml\n  - c.yaml\n"
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ base }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "1girl, base_val"
+
+    def test_circular_import_safe(self, partials_dir):
+        """A imports B, B imports A — no infinite recursion."""
+        _write_partial(partials_dir, "a.yaml",
+            "imports:\n  - b.yaml\n"
+            "variables:\n"
+            "  va:\n"
+            "    type: select\n"
+            "    options: [from_a]\n"
+        )
+        _write_partial(partials_dir, "b.yaml",
+            "imports:\n  - a.yaml\n"
+            "variables:\n"
+            "  vb:\n"
+            "    type: select\n"
+            "    options: [from_b]\n"
+        )
+        yaml_input = (
+            "imports:\n  - a.yaml\n"
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ va }}, {{ vb }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "1girl, from_a, from_b"
+
+    def test_main_yaml_overrides_import(self, partials_dir):
+        """Main YAML variable definition beats the imported one."""
+        _write_partial(partials_dir, "base.yaml",
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [oil painting]\n"
+        )
+        yaml_input = (
+            "imports:\n  - base.yaml\n"
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [anime]\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ style }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input)
+        assert prompt == "1girl, anime"
+
+    def test_wired_include_overrides_import(self, partials_dir):
+        """An explicit include_1 kwarg beats an imported file on the same variable."""
+        _write_partial(partials_dir, "base.yaml",
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [oil painting]\n"
+        )
+        wired_content = (
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [watercolor]\n"
+        )
+        yaml_input = (
+            "imports:\n  - base.yaml\n"
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ style }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input, include_1=wired_content)
+        assert prompt == "1girl, watercolor"
+
+    def test_wired_include_can_declare_imports(self, partials_dir):
+        """A wired include string with its own imports: key triggers file loading."""
+        _write_partial(partials_dir, "base.yaml",
+            "variables:\n"
+            "  style:\n"
+            "    type: select\n"
+            "    options: [anime]\n"
+        )
+        wired_content = "imports:\n  - base.yaml\n"
+        yaml_input = (
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ style }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input, include_1=wired_content)
+        assert prompt == "1girl, anime"
+
+    def test_import_file_not_found_raises(self, partials_dir):
+        yaml_input = (
+            "imports:\n  - missing.yaml\n"
+            "variables:\n"
+            "  x:\n"
+            "    type: select\n"
+            "    options: [a]\n"
+            "prompt: '{{ x }}'\n"
+        )
+        with pytest.raises(ValueError, match="not found"):
+            _generate_with_imports(yaml_input)
+
+    def test_imports_not_a_list_raises(self):
+        yaml_input = (
+            "imports: not_a_list\n"
+            "variables:\n"
+            "  x:\n"
+            "    type: select\n"
+            "    options: [a]\n"
+            "prompt: '{{ x }}'\n"
+        )
+        with pytest.raises(ValueError, match="'imports' must be a list"):
+            _generate_with_imports(yaml_input)
+
+    def test_wired_include_resolves_before_import_variables(self, partials_dir):
+        """Wired-include variables are resolved before imported variables.
+
+        A variable in an imported file may have when/unless expressions that
+        reference tags from a wired-include variable (cross-partial dependency).
+        The wired include must resolve first so those tags are available.
+        """
+        # Import defines 'choice' whose options use when expressions referencing
+        # 'context_tags' — a variable that only exists in the wired include.
+        _write_partial(partials_dir, "choices.yaml",
+            "variables:\n"
+            "  choice:\n"
+            "    type: select\n"
+            "    options:\n"
+            "      - value: option_a\n"
+            "        when: \"'active' in context_tags\"\n"
+            "      - value: option_b\n"
+            "        when: \"'passive' in context_tags\"\n"
+        )
+        # Wired include defines 'context' (which must resolve before 'choice')
+        wired_content = (
+            "variables:\n"
+            "  context:\n"
+            "    type: select\n"
+            "    options:\n"
+            "      - value: energetic\n"
+            "        tags: [active]\n"
+        )
+        yaml_input = (
+            "imports:\n  - choices.yaml\n"
+            "variables:\n"
+            "  subject:\n"
+            "    type: select\n"
+            "    options: [1girl]\n"
+            "prompt: '{{ subject }}, {{ context }}, {{ choice }}'\n"
+        )
+        prompt, _ = _generate_with_imports(yaml_input, include_1=wired_content)
+        assert prompt == "1girl, energetic, option_a"

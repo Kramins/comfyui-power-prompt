@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import pathlib
 import random
 import re
 
@@ -27,6 +28,29 @@ _when_sandbox.globals.update({
     "abs": abs,
     "round": round,
 })
+
+
+def _load_partials_file(path: str) -> str:
+    """Load a file from the registered power_prompt_partials folder.
+
+    All paths must resolve through the partials folder — no absolute paths or
+    paths outside that folder are permitted.
+    """
+    try:
+        import folder_paths
+        resolved = folder_paths.get_full_path("power_prompt_partials", path)
+    except Exception:
+        resolved = None
+    if not resolved:
+        raise ValueError(
+            f"'{path}' not found in the power-prompt partials folder."
+        )
+    try:
+        return pathlib.Path(resolved).read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raise ValueError(f"file not found: {resolved}")
+    except OSError as e:
+        raise ValueError(f"could not read file '{resolved}': {e}")
 
 
 def _parse_count(count_raw, option_count: int) -> tuple[int, int]:
