@@ -5,10 +5,12 @@ Run with: pytest tests/ -v
 """
 
 import json
+import pathlib
 import pytest
 
 from nodes.power_prompt import PowerPromptNode
 from nodes.power_prompt_partial import PowerPromptPartial
+from nodes.power_prompt_file_partial import PowerPromptFilePartial
 from nodes.utils import (
     _evaluate_when,
     _merge_include_variables,
@@ -1878,3 +1880,93 @@ prompt: |
         partial_node = PowerPromptPartial()
         result = partial_node.generate("")
         assert result == ("",)
+
+
+# ---------------------------------------------------------------------------
+# TestPowerPromptFilePartial
+# ---------------------------------------------------------------------------
+
+class TestPowerPromptFilePartial:
+
+    VALID_YAML = """\
+variables:
+  city:
+    type: select
+    count: 1
+    options:
+      - Tokyo
+      - Paris
+
+fragments:
+  location: "{{ city }}, vibrant streets"
+"""
+
+    def test_happy_path(self, tmp_path):
+        """Loads a valid partial YAML file and returns its content."""
+        f = tmp_path / "partial.yaml"
+        f.write_text(self.VALID_YAML, encoding="utf-8")
+        node = PowerPromptFilePartial()
+        result = node.generate(partial_file=str(f), yaml_input="")
+        assert result == (self.VALID_YAML,)
+
+    def test_content_feeds_into_main_node(self, tmp_path):
+        """Content from the file partial can be used by PowerPromptNode as an include."""
+        f = tmp_path / "partial.yaml"
+        f.write_text(self.VALID_YAML, encoding="utf-8")
+        node = PowerPromptFilePartial()
+        (content,) = node.generate(partial_file=str(f), yaml_input="")
+
+        main = PowerPromptNode()
+        prompt, _ = main.generate(
+            yaml_input="prompt: |\n  {{ fragment.location }}\n",
+            var_state=json.dumps({"city": "Tokyo"}),
+            seed=0,
+            include_1=content,
+        )
+        assert prompt == "Tokyo, vibrant streets"
+
+    def test_file_not_found(self, tmp_path):
+        node = PowerPromptFilePartial()
+        with pytest.raises(ValueError, match="file not found"):
+            node.generate(partial_file=str(tmp_path / "missing.yaml"), yaml_input="")
+
+    def test_empty_path_raises(self):
+        node = PowerPromptFilePartial()
+        with pytest.raises(ValueError, match="no file path provided"):
+            node.generate(partial_file="", yaml_input="")
+
+    def test_invalid_yaml_raises(self, tmp_path):
+        f = tmp_path / "bad.yaml"
+        f.write_text(": this is not valid yaml [", encoding="utf-8")
+        node = PowerPromptFilePartial()
+        with pytest.raises(ValueError, match="invalid YAML"):
+            node.generate(partial_file=str(f), yaml_input="")
+
+    def test_non_mapping_yaml_raises(self, tmp_path):
+        f = tmp_path / "list.yaml"
+        f.write_text("- a\n- b\n", encoding="utf-8")
+        node = PowerPromptFilePartial()
+        with pytest.raises(ValueError, match="must be a YAML mapping"):
+            node.generate(partial_file=str(f), yaml_input="")
+
+    def test_validates_variables_is_mapping(self, tmp_path):
+        f = tmp_path / "bad_vars.yaml"
+        f.write_text("variables: not a dict\n", encoding="utf-8")
+        node = PowerPromptFilePartial()
+        with pytest.raises(ValueError, match="'variables'.*must be a mapping"):
+            node.generate(partial_file=str(f), yaml_input="")
+
+    def test_validates_fragment_jinja2(self, tmp_path):
+        f = tmp_path / "bad_frag.yaml"
+        f.write_text('fragments:\n  broken: "{{ unclosed"\n', encoding="utf-8")
+        node = PowerPromptFilePartial()
+        with pytest.raises(ValueError, match="fragment 'broken'"):
+            node.generate(partial_file=str(f), yaml_input="")
+
+    def test_yaml_input_arg_is_ignored(self, tmp_path):
+        """yaml_input kwarg (the JS cache) has no effect — file content wins."""
+        f = tmp_path / "real.yaml"
+        f.write_text(self.VALID_YAML, encoding="utf-8")
+        node = PowerPromptFilePartial()
+        result = node.generate(partial_file=str(f), yaml_input="variables: {}\n")
+        assert result == (self.VALID_YAML,)
