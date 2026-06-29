@@ -8,6 +8,8 @@
     "build-editor": "node scripts/build-editor-bundle.mjs",
     "build-node": "node scripts/build-node-bundle.mjs",
     "build": "npm run build-editor && npm run build-node",
+    "release": "node scripts/release.mjs",
+    "check-version": "node scripts/check-version.mjs",
     "prepare": "husky"
   },
   "devDependencies": {
