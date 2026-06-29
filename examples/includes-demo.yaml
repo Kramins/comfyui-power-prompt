@@ -1,0 +1,57 @@
+# Inline includes demo
+#
+# This file shows how to pull a partial into a prompt using `includes:` rather
+# than wiring a node in the graph.  The result is identical to connecting a
+# PowerPromptFilePartial node — the included file's variables and fragments are
+# merged in before this YAML is evaluated.
+#
+# Setup:
+#   1. Copy both this file and `action-pose.yaml` into your ComfyUI
+#      `input/power-prompt/` folder (create it if it doesn't exist).
+#   2. In ComfyUI, add a Power Prompt node, click the file icon to load a
+#      YAML from the partials folder, and select this file.
+#
+# Because `includes:` is declared here, no extra nodes are needed — the
+# pose variables and `{{ fragment.pose_description }}` fragment are
+# available automatically.
+
+includes:
+  - action-pose.yaml
+
+variables:
+
+  character:
+    type: select
+    count: 1
+    options:
+      - value: high school girl
+        tags: [student]
+      - value: shrine maiden
+        tags: [shrine]
+      - value: magical girl
+        tags: [magical]
+
+  art_style:
+    type: select
+    count: 1
+    options:
+      - anime
+      - cel shading
+      - watercolor illustration
+
+  mood:
+    type: text
+    label: "Extra mood / tags"
+
+# `fragment.pose_description` comes from action-pose.yaml:
+#   "{{ shot_type }}, {{ pose }}, {{ action }}"
+#
+# `shot_type`, `pose`, and `action` are also resolved as variables, so their
+# tags (e.g. face_only, full, sitting) are available in `when`/`unless`
+# expressions in this file even though they are defined in the included partial.
+
+prompt: |
+  1girl, {{ character }}, {{ art_style }},
+  {{ fragment.pose_description }},
+  {% if mood %}{{ mood }},{% endif %}
+  masterpiece, best quality, detailed

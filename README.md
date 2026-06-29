@@ -1,6 +1,6 @@
 # Power Prompt
 
-> **Note:** The `main` branch tracks active development and may be ahead of the latest release. Features documented here might not be available in an older installed version — check the [releases](../../releases) page to see what's in the version you have.
+> **Note:** The `main` branch tracks active development and may be ahead of the latest release. Features documented here might not be available in an older installed version — check the [releases](../../releases) page or the [CHANGELOG](CHANGELOG.md) to see what's in the version you have.
 
 > **A note from me:** I built this mostly for myself - I kept running into the same frustration with other prompt nodes: either too little control or too much friction to use comfortably. I wanted a clean UI that made it fun to experiment with options, and I may have gotten a little carried away. It's a hobby project, but I'm genuinely open to feature requests and bug reports.
 
@@ -17,6 +17,8 @@ A ComfyUI node for building rich, dynamic prompts from a simple YAML definition.
 - **UI controls** — `label:` sets a custom display name, `group:` organises variables into named sections, `hidden:` hides a variable from the UI while still resolving it
 - **Prompt fragments** — define a `fragments:` mapping of named Jinja2 sub-templates rendered after variables resolve; reference them as `{{ fragment.name }}` in any prompt
 - **Partials** — wire one or more **Power Prompt Partial** nodes into include slots to share `variables:` and `fragments:` across compositions
+- **Inline includes** — declare file-based partial dependencies directly in any YAML with `includes:`; resolved transitively and merged before the prompt runs, no extra nodes required
+- **Global `tags`** — a synthetic `tags` variable accumulates every tag emitted so far across all variables; branch on any tag without knowing which variable produced it
 
 ## Installation
 
@@ -320,6 +322,9 @@ See the [`examples/`](examples/) folder:
 - [`basic.yaml`](examples/basic.yaml) — two variables, minimal prompt
 - [`standard.yaml`](examples/standard.yaml) — weighted options, tags, `when`/`unless`, count ranges, text variable
 - [`advanced.yaml`](examples/advanced.yaml) — full feature showcase including `fragments:`
+- [`action-pose.yaml`](examples/action-pose.yaml) — reusable partial: shot type, pose, and action variables with tag-driven conditionals; exposes `{{ fragment.pose_description }}`
+- [`includes-demo.yaml`](examples/includes-demo.yaml) — demonstrates inline `includes:`, pulling `action-pose.yaml` into a main prompt without wiring any extra nodes
+- [`Power Prompt - Example.json`](examples/Power%20Prompt%20-%20Example.json) — full ComfyUI workflow with wired partials and a file partial
 
 ## License
 

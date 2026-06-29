@@ -1,6 +1,6 @@
 {
   "name": "power-prompt",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "ComfyUI Power Prompt node – editor build tooling",
   "private": true,
   "type": "module",
