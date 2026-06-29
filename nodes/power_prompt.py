@@ -6,6 +6,7 @@ import yaml
 from jinja2 import BaseLoader, Environment, StrictUndefined
 
 from .utils import (
+    _collect_imports,
     _evaluate_when,
     _merge_include_fragments,
     _merge_include_variables,
@@ -18,6 +19,7 @@ from .utils import (
 )
 
 logger = logging.getLogger(__name__)
+
 
 DEFAULT_YAML = """\
 variables:
@@ -93,8 +95,21 @@ class PowerPromptNode:
     ) -> tuple[dict, dict, str, list[str]]:
         """Collect include files, combine them with the main YAML, parse the document,
         and return (doc, variables, prompt_template, includes)."""
-        includes = [v for k, v in sorted(kwargs.items()) if k.startswith("include_") and v]
-        base_variables = _merge_include_variables(includes)
+        wired_includes = [v for k, v in sorted(kwargs.items()) if k.startswith("include_") and v]
+        import_includes = _collect_imports(yaml_input, wired_includes)
+        includes = import_includes + wired_includes
+
+        # Wired-include variables must be in the dict BEFORE imported variables so they
+        # are resolved first. Imported variables' when/unless expressions may reference
+        # tags from wired-include variables (e.g. char_archetype_tags), which only exist
+        # in eval_context once those variables have been resolved.
+        # Wired includes also take priority over imports for same-named variables.
+        _wired_vars = _merge_include_variables(wired_includes)
+        _import_vars = _merge_include_variables(import_includes)
+        base_variables = dict(_wired_vars)
+        for k, v in _import_vars.items():
+            if k not in base_variables:
+                base_variables[k] = v
 
         # Prepend partial texts so YAML anchors defined in partials are visible when the
         # main YAML is parsed. Duplicate top-level keys (e.g. `variables:`) resolve to the

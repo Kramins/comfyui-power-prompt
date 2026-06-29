@@ -2,18 +2,42 @@ name: Publish to Comfy Registry
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-    paths:
-      - "pyproject.toml"
+    tags:
+      - "v*"
 
 jobs:
   publish-node:
-    name: Publish Custom Node to registry
+    name: Test, build, and publish
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Verify versions match tag
+        run: node scripts/check-version.mjs ${{ github.ref_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Python tests
+        run: python -m pytest tests/ -v
+
+      - name: Build frontend bundle
+        run: npm run build-node
+
       - name: Publish Custom Node
         uses: Comfy-Org/publish-node-action@main
         with:

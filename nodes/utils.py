@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import pathlib
 import random
 import re
 
@@ -27,6 +28,80 @@ _when_sandbox.globals.update({
     "abs": abs,
     "round": round,
 })
+
+
+def _extract_import_paths(content: str) -> list[str]:
+    """Return the list of paths declared under an `includes:` key in a YAML content string.
+
+    Returns [] if the key is absent or the content is not a mapping. Raises ValueError
+    if `includes:` is present but not a list.
+    """
+    try:
+        doc = yaml.safe_load(content)
+    except yaml.YAMLError:
+        return []
+    if not isinstance(doc, dict):
+        return []
+    raw = doc.get("includes")
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ValueError(
+            f"'includes' must be a list of file paths, got {type(raw).__name__!r}."
+        )
+    return [str(item).strip() for item in raw if item and str(item).strip()]
+
+
+def _collect_imports(yaml_input: str, wired_includes: list[str]) -> list[str]:
+    """Walk the include graph (DFS post-order) and return file contents in dependency order.
+
+    Deduplication via seen prevents redundant loads and breaks cycles.
+    Seed paths come from wired-include `includes:` keys first, then the main YAML's.
+    """
+    seen: set[str] = set()
+    result: list[str] = []
+
+    def dfs(path: str) -> None:
+        if path in seen:
+            return
+        seen.add(path)
+        content = _load_partials_file(path)
+        for child in _extract_import_paths(content):
+            dfs(child)
+        result.append(content)
+
+    seed_paths: list[str] = []
+    for inc in wired_includes:
+        seed_paths.extend(_extract_import_paths(inc))
+    seed_paths.extend(_extract_import_paths(yaml_input))
+
+    for path in seed_paths:
+        dfs(path)
+
+    return result
+
+
+def _load_partials_file(path: str) -> str:
+    """Load a file from the registered power_prompt_partials folder.
+
+    All paths must resolve through the partials folder — no absolute paths or
+    paths outside that folder are permitted.
+    """
+    try:
+        import folder_paths
+        resolved = folder_paths.get_full_path("power_prompt_partials", path)
+    except Exception:
+        resolved = None
+    if not resolved:
+        raise ValueError(
+            f"'{path}' not found in the power-prompt partials folder."
+        )
+    try:
+        return pathlib.Path(resolved).read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raise ValueError(f"file not found: {resolved}")
+    except OSError as e:
+        raise ValueError(f"could not read file '{resolved}': {e}")
 
 
 def _parse_count(count_raw, option_count: int) -> tuple[int, int]:
