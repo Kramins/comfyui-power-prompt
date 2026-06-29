@@ -2121,7 +2121,7 @@ def _generate_with_imports(yaml_input: str, var_state: dict | None = None, seed:
 
 class TestImports:
     def test_no_imports_key_unchanged(self):
-        """Existing YAML without imports: works as before."""
+        """Existing YAML without includes: works as before."""
         yaml_input = (
             "variables:\n"
             "  x:\n"
@@ -2140,7 +2140,7 @@ class TestImports:
             "    options: [anime]\n"
         )
         yaml_input = (
-            "imports:\n  - base.yaml\n"
+            "includes:\n  - base.yaml\n"
             "variables:\n"
             "  subject:\n"
             "    type: select\n"
@@ -2156,7 +2156,7 @@ class TestImports:
             "  quality: masterpiece, best quality\n"
         )
         yaml_input = (
-            "imports:\n  - frags.yaml\n"
+            "includes:\n  - frags.yaml\n"
             "variables:\n"
             "  x:\n"
             "    type: select\n"
@@ -2181,7 +2181,7 @@ class TestImports:
             "    options: [anime]\n"
         )
         yaml_input = (
-            "imports:\n  - a.yaml\n  - b.yaml\n"
+            "includes:\n  - a.yaml\n  - b.yaml\n"
             "variables:\n"
             "  subject:\n"
             "    type: select\n"
@@ -2200,7 +2200,7 @@ class TestImports:
             "    options: [anime]\n"
         )
         yaml_input = (
-            "imports:\n  - base.yaml\n  - base.yaml\n"
+            "includes:\n  - base.yaml\n  - base.yaml\n"
             "variables:\n"
             "  subject:\n"
             "    type: select\n"
@@ -2219,14 +2219,14 @@ class TestImports:
             "    options: [happy]\n"
         )
         _write_partial(partials_dir, "b.yaml",
-            "imports:\n  - c.yaml\n"
+            "includes:\n  - c.yaml\n"
             "variables:\n"
             "  style:\n"
             "    type: select\n"
             "    options: [anime]\n"
         )
         yaml_input = (
-            "imports:\n  - b.yaml\n"
+            "includes:\n  - b.yaml\n"
             "variables:\n"
             "  subject:\n"
             "    type: select\n"
@@ -2244,10 +2244,10 @@ class TestImports:
             "    type: select\n"
             "    options: [base_val]\n"
         )
-        _write_partial(partials_dir, "b.yaml", "imports:\n  - d.yaml\n")
-        _write_partial(partials_dir, "c.yaml", "imports:\n  - d.yaml\n")
+        _write_partial(partials_dir, "b.yaml", "includes:\n  - d.yaml\n")
+        _write_partial(partials_dir, "c.yaml", "includes:\n  - d.yaml\n")
         yaml_input = (
-            "imports:\n  - b.yaml\n  - c.yaml\n"
+            "includes:\n  - b.yaml\n  - c.yaml\n"
             "variables:\n"
             "  subject:\n"
             "    type: select\n"
@@ -2260,21 +2260,21 @@ class TestImports:
     def test_circular_import_safe(self, partials_dir):
         """A imports B, B imports A — no infinite recursion."""
         _write_partial(partials_dir, "a.yaml",
-            "imports:\n  - b.yaml\n"
+            "includes:\n  - b.yaml\n"
             "variables:\n"
             "  va:\n"
             "    type: select\n"
             "    options: [from_a]\n"
         )
         _write_partial(partials_dir, "b.yaml",
-            "imports:\n  - a.yaml\n"
+            "includes:\n  - a.yaml\n"
             "variables:\n"
             "  vb:\n"
             "    type: select\n"
             "    options: [from_b]\n"
         )
         yaml_input = (
-            "imports:\n  - a.yaml\n"
+            "includes:\n  - a.yaml\n"
             "variables:\n"
             "  subject:\n"
             "    type: select\n"
@@ -2293,7 +2293,7 @@ class TestImports:
             "    options: [oil painting]\n"
         )
         yaml_input = (
-            "imports:\n  - base.yaml\n"
+            "includes:\n  - base.yaml\n"
             "variables:\n"
             "  style:\n"
             "    type: select\n"
@@ -2321,7 +2321,7 @@ class TestImports:
             "    options: [watercolor]\n"
         )
         yaml_input = (
-            "imports:\n  - base.yaml\n"
+            "includes:\n  - base.yaml\n"
             "variables:\n"
             "  subject:\n"
             "    type: select\n"
@@ -2332,14 +2332,14 @@ class TestImports:
         assert prompt == "1girl, watercolor"
 
     def test_wired_include_can_declare_imports(self, partials_dir):
-        """A wired include string with its own imports: key triggers file loading."""
+        """A wired include string with its own includes: key triggers file loading."""
         _write_partial(partials_dir, "base.yaml",
             "variables:\n"
             "  style:\n"
             "    type: select\n"
             "    options: [anime]\n"
         )
-        wired_content = "imports:\n  - base.yaml\n"
+        wired_content = "includes:\n  - base.yaml\n"
         yaml_input = (
             "variables:\n"
             "  subject:\n"
@@ -2352,7 +2352,7 @@ class TestImports:
 
     def test_import_file_not_found_raises(self, partials_dir):
         yaml_input = (
-            "imports:\n  - missing.yaml\n"
+            "includes:\n  - missing.yaml\n"
             "variables:\n"
             "  x:\n"
             "    type: select\n"
@@ -2364,14 +2364,14 @@ class TestImports:
 
     def test_imports_not_a_list_raises(self):
         yaml_input = (
-            "imports: not_a_list\n"
+            "includes: not_a_list\n"
             "variables:\n"
             "  x:\n"
             "    type: select\n"
             "    options: [a]\n"
             "prompt: '{{ x }}'\n"
         )
-        with pytest.raises(ValueError, match="'imports' must be a list"):
+        with pytest.raises(ValueError, match="'includes' must be a list"):
             _generate_with_imports(yaml_input)
 
     def test_wired_include_resolves_before_import_variables(self, partials_dir):
@@ -2403,7 +2403,7 @@ class TestImports:
             "        tags: [active]\n"
         )
         yaml_input = (
-            "imports:\n  - choices.yaml\n"
+            "includes:\n  - choices.yaml\n"
             "variables:\n"
             "  subject:\n"
             "    type: select\n"
@@ -2579,7 +2579,7 @@ class TestUIDefinition:
         _write_partial(partials_dir, "base.yaml",
             "variables:\n  style:\n    type: select\n    options: [anime]\n"
         )
-        yaml_input = "imports:\n  - base.yaml\nvariables:\n  subject:\n    type: select\n    options: [1girl]\nprompt: '{{ subject }}'\n"
+        yaml_input = "includes:\n  - base.yaml\nvariables:\n  subject:\n    type: select\n    options: [1girl]\nprompt: '{{ subject }}'\n"
         resp = build_ui_definition(yaml_input, [])
         names = [c.name for c in resp.controls]
         assert "style" in names
@@ -2589,7 +2589,7 @@ class TestUIDefinition:
         _write_partial(partials_dir, "base.yaml",
             "variables:\n  x:\n    type: select\n    options: [from_import]\n"
         )
-        yaml_input = "imports:\n  - base.yaml\nvariables:\n  x:\n    type: select\n    options: [from_main]\nprompt: '{{ x }}'\n"
+        yaml_input = "includes:\n  - base.yaml\nvariables:\n  x:\n    type: select\n    options: [from_main]\nprompt: '{{ x }}'\n"
         resp = build_ui_definition(yaml_input, [])
         ctrl = next(c for c in resp.controls if c.name == "x")
         assert ctrl.options == ["from_main"]
@@ -2599,7 +2599,7 @@ class TestUIDefinition:
             "variables:\n  x:\n    type: select\n    options: [from_import]\n"
         )
         include = "variables:\n  x:\n    type: select\n    options: [from_wired]\n"
-        yaml_input = "imports:\n  - base.yaml\nprompt: '{{ x }}'\n"
+        yaml_input = "includes:\n  - base.yaml\nprompt: '{{ x }}'\n"
         resp = build_ui_definition(yaml_input, [include])
         ctrl = next(c for c in resp.controls if c.name == "x")
         assert ctrl.options == ["from_wired"]
@@ -2617,7 +2617,7 @@ class TestUIDefinition:
         assert resp.controls == []
 
     def test_missing_import_file_returns_error(self, partials_dir):
-        yaml_input = "imports:\n  - ghost.yaml\nprompt: 'x'\n"
+        yaml_input = "includes:\n  - ghost.yaml\nprompt: 'x'\n"
         resp = build_ui_definition(yaml_input, [])
         assert resp.error is not None
         assert resp.controls == []

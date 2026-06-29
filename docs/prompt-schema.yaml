@@ -5,6 +5,7 @@
 #
 # Top-level structure:
 #
+#   includes:            (optional) list of partial file paths to load before this YAML
 #   variables:          (required) map of named variable definitions
 #     <name>:           each key becomes a variable and a UI control
 #       ...
@@ -12,6 +13,31 @@
 #   fragments:          (optional) map of named Jinja2 sub-template strings
 #
 # ─────────────────────────────────────────────────────────────────────────────
+
+
+# ── includes ──────────────────────────────────────────────────────────────────
+#
+# Optional. A list of partial file paths to load before this YAML is evaluated.
+# Paths are resolved from the registered power-prompt partials folder (the same
+# folder used by the Power Prompt File Partial node).
+#
+# includes: [characters/alice.yaml, styles/anime.yaml]
+#
+# Includes are resolved recursively: if an imported file itself has an `includes:`
+# list, those files are loaded too. Each file is loaded at most once regardless
+# of how many times it appears in the graph (deduplication prevents cycles).
+#
+# Merge priority (lowest → highest):
+#   imported files  →  wired partials (include_1…include_N)  →  main YAML
+#
+# `includes:` is valid in main prompts, wired partials, and imported files.
+# The `includes:` key is stripped before the YAML is processed as a prompt.
+#
+# Can be omitted when all partial dependencies are wired via ComfyUI connections.
+
+includes:
+  - characters/alice.yaml    # resolved from the partials folder
+  - styles/anime.yaml
 
 
 # ── variables ─────────────────────────────────────────────────────────────────
@@ -245,6 +271,7 @@ fragments:
 # ┌─────────────────────┬──────────────────────┬─────────────┬────────────────────────────────────────────┐
 # │ Field               │ Type                 │ Default     │ Can omit when…                             │
 # ├─────────────────────┼──────────────────────┼─────────────┼────────────────────────────────────────────┤
+# │ includes            │ list of strings      │ []          │ All partials are wired via graph connections│
 # │ variables           │ mapping              │ —           │ Never (required)                           │
 # │ prompt              │ string               │ —           │ Never (required)                           │
 # │ fragments           │ mapping              │ {}          │ No composed sub-templates needed           │
@@ -311,8 +338,11 @@ fragments:
 # The `prompt:` key is not meaningful in a partial and is ignored.
 #
 # Merge order:
-#   include_1 → include_2 → … → main YAML
+#   imported files → include_1 → include_2 → … → main YAML
 #   (main YAML always wins on name collision for both variables and fragments)
+#
+# Any partial may also declare its own `includes:` list — those files are
+# resolved transitively before the partial itself is merged in.
 #
 # Example partial:
 #

@@ -31,10 +31,10 @@ _when_sandbox.globals.update({
 
 
 def _extract_import_paths(content: str) -> list[str]:
-    """Return the list of paths declared under an `imports:` key in a YAML content string.
+    """Return the list of paths declared under an `includes:` key in a YAML content string.
 
     Returns [] if the key is absent or the content is not a mapping. Raises ValueError
-    if `imports:` is present but not a list.
+    if `includes:` is present but not a list.
     """
     try:
         doc = yaml.safe_load(content)
@@ -42,21 +42,21 @@ def _extract_import_paths(content: str) -> list[str]:
         return []
     if not isinstance(doc, dict):
         return []
-    raw = doc.get("imports")
+    raw = doc.get("includes")
     if raw is None:
         return []
     if not isinstance(raw, list):
         raise ValueError(
-            f"'imports' must be a list of file paths, got {type(raw).__name__!r}."
+            f"'includes' must be a list of file paths, got {type(raw).__name__!r}."
         )
     return [str(item).strip() for item in raw if item and str(item).strip()]
 
 
 def _collect_imports(yaml_input: str, wired_includes: list[str]) -> list[str]:
-    """Walk the import graph (DFS post-order) and return file contents in dependency order.
+    """Walk the include graph (DFS post-order) and return file contents in dependency order.
 
     Deduplication via seen prevents redundant loads and breaks cycles.
-    Seed paths come from wired-include `imports:` keys first, then the main YAML's.
+    Seed paths come from wired-include `includes:` keys first, then the main YAML's.
     """
     seen: set[str] = set()
     result: list[str] = []

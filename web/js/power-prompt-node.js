@@ -415,7 +415,7 @@ function getIncludeRawStrings(node) {
     if (srcNode.mode === 4) continue;
     if (srcNode.type === "PowerPromptFilePartial") {
       const fileWidget = srcNode.widgets?.find((w) => w.name === "partial_file");
-      if (fileWidget?.value) parts.push(`imports:
+      if (fileWidget?.value) parts.push(`includes:
   - ${fileWidget.value}`);
     } else {
       const w = srcNode.widgets?.find((w2) => w2.name === "yaml_input");

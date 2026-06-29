@@ -14,7 +14,7 @@ export function getIncludeRawStrings(node) {
         if (srcNode.mode === 4) continue; // bypassed — exclude from UI definition
         if (srcNode.type === "PowerPromptFilePartial") {
             const fileWidget = srcNode.widgets?.find(w => w.name === "partial_file");
-            if (fileWidget?.value) parts.push(`imports:\n  - ${fileWidget.value}`);
+            if (fileWidget?.value) parts.push(`includes:\n  - ${fileWidget.value}`);
         } else {
             const w = srcNode.widgets?.find(w => w.name === "yaml_input");
             if (w?.value) parts.push(w.value);

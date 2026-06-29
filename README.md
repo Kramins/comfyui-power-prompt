@@ -1,5 +1,7 @@
 # Power Prompt
 
+> **Note:** The `main` branch tracks active development and may be ahead of the latest release. Features documented here might not be available in an older installed version — check the [releases](../../releases) page to see what's in the version you have.
+
 > **A note from me:** I built this mostly for myself - I kept running into the same frustration with other prompt nodes: either too little control or too much friction to use comfortably. I wanted a clean UI that made it fun to experiment with options, and I may have gotten a little carried away. It's a hobby project, but I'm genuinely open to feature requests and bug reports.
 
 A ComfyUI node for building rich, dynamic prompts from a simple YAML definition. Define named variables with weighted options, conditional filtering, and Jinja2 templating — then let the node assemble your prompt at generation time.
@@ -27,16 +29,21 @@ A ComfyUI node for building rich, dynamic prompts from a simple YAML definition.
 
 ## Local Development
 
-The YAML editor uses a pre-built [CodeMirror 6](https://codemirror.net/) bundle committed at `web/js/vendor/codemirror-bundle.js`. You only need to rebuild it if you update CodeMirror versions or add new editor extensions.
-
 **Prerequisites:** Node.js 18+
 
 ```bash
-npm install
-npm run build-editor
+npm install   # also installs the Husky pre-commit hook
 ```
 
-This runs `scripts/build-editor-bundle.mjs` via esbuild and overwrites `web/js/vendor/codemirror-bundle.js`. Commit the result alongside any other changes.
+There are two JavaScript bundles, both built with esbuild:
+
+| Script | Input | Output | When to rebuild |
+|---|---|---|---|
+| `npm run build-editor` | `scripts/cm-entry.mjs` | `web/js/vendor/codemirror-bundle.js` | CodeMirror version bump or new editor extensions |
+| `npm run build-node` | `src/index.js` | `web/js/power-prompt-node.js` | Any change under `src/` |
+| `npm run build` | both | both | — |
+
+The Husky pre-commit hook runs `build-node` and stages the output automatically, so you never need to remember to rebuild before committing frontend changes. Rebuild `build-editor` manually if you touch the CodeMirror setup, and commit the result alongside your other changes.
 
 ## YAML Reference
 
@@ -232,10 +239,10 @@ Partials contribute `variables:` and `fragments:` into a main node — useful fo
 
 **Wired partials** — connect **Power Prompt Partial** or **Power Prompt File Partial** nodes into a main node's `include_1`, `include_2`, … input slots in the ComfyUI graph.
 
-**Inline imports** — declare file dependencies directly inside any YAML with a top-level `imports:` list. Files are resolved from the registered `power-prompt` partials folder (the same folder that **Power Prompt File Partial** uses).
+**Inline includes** — declare file dependencies directly inside any YAML with a top-level `includes:` list. Files are resolved from the registered `power-prompt` partials folder (the same folder that **Power Prompt File Partial** uses).
 
 ```yaml
-imports:
+includes:
   - characters/alice.yaml
   - styles/anime.yaml
 
@@ -248,19 +255,19 @@ prompt: |
   {{ subject }}, {{ fragment.style_block }}
 ```
 
-Any YAML — main prompt, wired partial, or imported file — can declare `imports:`. Imports are resolved **transitively**: if an imported file itself has an `imports:` list, those files are loaded too. The same file is never loaded more than once regardless of how many times it appears in the graph (cycles are safe).
+Any YAML — main prompt, wired partial, or included file — can declare `includes:`. Imports are resolved **transitively**: if an included file itself has an `includes:` list, those files are loaded too. The same file is never loaded more than once regardless of how many times it appears in the graph (cycles are safe).
 
 #### Merge order and priority
 
 All sources are merged in a fixed order before the prompt renders. The rightmost source wins on any name collision:
 
 ```
-imported files  →  wired partials (include_1 … include_N)  →  main YAML
+included files  →  wired partials (include_1 … include_N)  →  main YAML
 ```
 
 | Source | Priority | Notes |
 |---|---|---|
-| Imported files | Lowest | Declared via `imports:`; earlier entries in the list lose to later ones |
+| Included files | Lowest | Declared via `includes:`; earlier entries in the list lose to later ones |
 | Wired partials | Middle | `include_1` < `include_2` < … (higher number wins) |
 | Main YAML | Highest | Always overrides everything |
 
@@ -286,10 +293,10 @@ variables:
     options:
       - value: studying, surrounded by books
         when: "'student' in char_archetype_tags"   # ← works because wired partials
-      - value: gazing into the distance             #   resolve before imports
+      - value: gazing into the distance             #   resolve before includes
 ```
 
-Because wired partials resolve first, their tags are already in `eval_context` when imported variables are processed. **If you need a variable defined in a wired partial to gate options in an imported file, always supply that variable via a wired partial, not another import.**
+Because wired partials resolve first, their tags are already in `eval_context` when imported variables are processed. **If you need a variable defined in a wired partial to gate options in an included file, always supply that variable via a wired partial, not another import.**
 
 The `prompt:` key is not meaningful in a partial and is ignored.
 
