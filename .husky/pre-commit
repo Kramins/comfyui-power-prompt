@@ -1,0 +1,2 @@
+npm run build-node
+git add web/js/power-prompt-node.js

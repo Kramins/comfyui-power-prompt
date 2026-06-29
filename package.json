@@ -5,7 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build-editor": "node scripts/build-editor-bundle.mjs"
+    "build-editor": "node scripts/build-editor-bundle.mjs",
+    "build-node": "node scripts/build-node-bundle.mjs",
+    "build": "npm run build-editor && npm run build-node",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@codemirror/autocomplete": "^6.0.0",
@@ -16,6 +19,7 @@
     "@codemirror/state": "^6.0.0",
     "@codemirror/theme-one-dark": "^6.0.0",
     "@codemirror/view": "^6.0.0",
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "husky": "^9.1.7"
   }
 }
