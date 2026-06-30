@@ -1,58 +1,22 @@
 {
   "id": "2c6a0bb3-691d-4057-9ab1-f47bc21112a3",
   "revision": 0,
-  "last_node_id": 30,
-  "last_link_id": 41,
+  "last_node_id": 79,
+  "last_link_id": 563,
   "nodes": [
-    {
-      "id": 5,
-      "type": "EmptyLatentImage",
-      "pos": [
-        -385.938651773071,
-        757.2402501062005
-      ],
-      "size": [
-        315,
-        106
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "LATENT",
-          "type": "LATENT",
-          "slot_index": 0,
-          "links": [
-            23
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.25.1",
-        "Node name for S&R": "EmptyLatentImage"
-      },
-      "widgets_values": [
-        1024,
-        1024,
-        1
-      ]
-    },
     {
       "id": 15,
       "type": "PreviewAny",
       "pos": [
-        295.12965733868424,
-        92.61430996219744
+        350,
+        -620
       ],
       "size": [
         490,
-        238.5
+        240
       ],
       "flags": {},
-      "order": 8,
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
@@ -66,7 +30,7 @@
           "name": "STRING",
           "type": "STRING",
           "links": [
-            26
+            307
           ]
         }
       ],
@@ -85,54 +49,18 @@
       "bgcolor": "#353"
     },
     {
-      "id": 17,
-      "type": "PrimitiveStringMultiline",
-      "pos": [
-        296.31902299691353,
-        378.26363059217965
-      ],
-      "size": [
-        482.67277458166495,
-        201.47637291833507
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            27
-          ]
-        }
-      ],
-      "title": "Negative Prompt",
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.26.0",
-        "Node name for S&R": "PrimitiveStringMultiline"
-      },
-      "widgets_values": [
-        "text, watermark"
-      ],
-      "color": "#322",
-      "bgcolor": "#533"
-    },
-    {
       "id": 11,
       "type": "PreviewAny",
       "pos": [
-        290.6271122619628,
-        -205.0805951630591
+        350,
+        -340
       ],
       "size": [
         490,
-        238.5
+        240
       ],
       "flags": {},
-      "order": 9,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
@@ -163,75 +91,53 @@
       "bgcolor": "#353"
     },
     {
-      "id": 4,
-      "type": "CheckpointLoaderSimple",
+      "id": 63,
+      "type": "PreviewImage",
       "pos": [
-        -386.4999694824219,
-        610.6666259765625
+        1370,
+        -620
       ],
       "size": [
-        315,
-        98
+        620,
+        610
       ],
       "flags": {},
-      "order": 2,
+      "order": 9,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 308
+        }
+      ],
       "outputs": [
         {
-          "name": "MODEL",
-          "type": "MODEL",
-          "slot_index": 0,
-          "links": [
-            22
-          ]
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "slot_index": 1,
-          "links": [
-            25
-          ]
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "slot_index": 2,
-          "links": [
-            24
-          ]
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
         }
       ],
       "properties": {
         "cnr_id": "comfy-core",
-        "ver": "0.25.1",
-        "Node name for S&R": "CheckpointLoaderSimple",
-        "models": [
-          {
-            "name": "v1-5-pruned-emaonly-fp16.safetensors",
-            "url": "https://huggingface.co/Comfy-Org/stable-diffusion-v1-5-archive/resolve/main/v1-5-pruned-emaonly-fp16.safetensors",
-            "directory": "checkpoints"
-          }
-        ]
+        "ver": "0.26.0",
+        "Node name for S&R": "PreviewImage"
       },
-      "widgets_values": [
-        "sd_xl_base_1.0.safetensors"
-      ]
+      "widgets_values": []
     },
     {
       "id": 23,
       "type": "PowerPromptPartial",
       "pos": [
-        -1460.0592994775498,
-        109.57846894570521
+        -1480,
+        110
       ],
       "size": [
-        680.0610998026127,
-        563.1994147957153
+        690,
+        570
       ],
       "flags": {},
-      "order": 3,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -239,7 +145,7 @@
           "name": "partial",
           "type": "POWER_PROMPT_PARTIAL",
           "links": [
-            38
+            561
           ]
         }
       ],
@@ -250,8 +156,179 @@
         "Node name for S&R": "PowerPromptPartial"
       },
       "widgets_values": [
-        "variables:\n\n  location_type:\n    label: \"Location Type\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: urban\n        tags: [outdoor, city]\n      - value: nature\n        tags: [outdoor, nature]\n      - value: coastal\n        tags: [outdoor, nature, coastal]\n      - value: indoor\n        tags: [indoor]\n      - value: fantasy realm\n        tags: [outdoor, fantasy]\n      - value: traditional\n        tags: [outdoor, traditional]\n\n  setting:\n    label: \"Setting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      # urban\n      - value: city street\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: rooftop\n        tags: [urban, elevated]\n        when: \"'city' in location_type_tags\"\n      - value: back alley\n        tags: [urban, narrow]\n        when: \"'city' in location_type_tags\"\n      - value: train station platform\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: shopping arcade\n        tags: [urban, covered]\n        when: \"'city' in location_type_tags\"\n      # nature\n      - value: forest path\n        tags: [nature, enclosed]\n        when: \"'nature' in location_type_tags\"\n      - value: mountain overlook\n        tags: [nature, elevated]\n        when: \"'nature' in location_type_tags\"\n      - value: riverbank\n        tags: [nature, water]\n        when: \"'nature' in location_type_tags\"\n      - value: meadow\n        tags: [nature, open]\n        when: \"'nature' in location_type_tags\"\n      # coastal\n      - value: sandy beach\n        tags: [coastal, open]\n        when: \"'coastal' in location_type_tags\"\n      - value: cliff overlooking the sea\n        tags: [coastal, elevated]\n        when: \"'coastal' in location_type_tags\"\n      - value: seaside pier\n        tags: [coastal, water]\n        when: \"'coastal' in location_type_tags\"\n      # indoor\n      - value: cozy cafe\n        tags: [indoor, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: library\n        tags: [indoor, quiet]\n        when: \"'indoor' in location_type_tags\"\n      - value: bedroom\n        tags: [indoor, intimate]\n        when: \"'indoor' in location_type_tags\"\n      - value: school classroom\n        tags: [indoor, school]\n        when: \"'indoor' in location_type_tags\"\n      - value: cathedral interior\n        tags: [indoor, grand]\n        when: \"'indoor' in location_type_tags\"\n      # fantasy\n      - value: ancient ruins\n        tags: [fantasy, outdoor]\n        when: \"'fantasy' in location_type_tags\"\n      - value: floating island\n        tags: [fantasy, elevated]\n        when: \"'fantasy' in location_type_tags\"\n      - value: enchanted forest\n        tags: [fantasy, nature]\n        when: \"'fantasy' in location_type_tags\"\n      # traditional\n      - value: shrine steps\n        tags: [traditional, elevated]\n        when: \"'traditional' in location_type_tags\"\n      - value: Japanese garden\n        tags: [traditional, nature]\n        when: \"'traditional' in location_type_tags\"\n      - value: bamboo grove\n        tags: [traditional, nature, enclosed]\n        when: \"'traditional' in location_type_tags\"\n\n  season:\n    label: \"Season\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: spring\n        tags: [warm, bright, blooming]\n        weight: 2\n      - value: summer\n        tags: [hot, bright]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: autumn\n        tags: [cool, moody]\n      - value: winter\n        tags: [cold, dark]\n\n  weather:\n    label: \"Weather\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: clear sky\n        tags: [dry, bright]\n        weight: 3\n        unless: \"'indoor' in location_type_tags\"\n      - value: scattered clouds\n        tags: [dry]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: overcast\n        tags: [grey, dry]\n        unless: \"'indoor' in location_type_tags\"\n      - value: light rain\n        tags: [rainy, wet]\n        unless: \"'indoor' in location_type_tags\"\n      - value: heavy rain\n        tags: [rainy, wet, dramatic]\n        unless: \"'indoor' in location_type_tags or season == 'winter'\"\n      - value: snowfall\n        tags: [snowy, cold]\n        when: \"season == 'winter' and 'outdoor' in location_type_tags\"\n      - value: cherry blossoms drifting\n        tags: [dry, magical, blooming]\n        when: \"season == 'spring' and 'outdoor' in location_type_tags\"\n      - value: autumn leaves falling\n        tags: [dry, magical]\n        when: \"season == 'autumn' and 'outdoor' in location_type_tags\"\n      - value: indoor lighting\n        tags: [dry, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: golden mist\n        tags: [dry, magical]\n        when: \"'fantasy' in location_type_tags\"\n\n  time_of_day:\n    label: \"Time of Day\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: dawn\n        tags: [dim, cool_light]\n        unless: \"'indoor' in location_type_tags\"\n      - value: morning\n        tags: [bright, warm_light]\n      - value: afternoon\n        tags: [bright, warm_light]\n      - value: golden hour\n        tags: [warm_light, dramatic]\n        weight: 2\n      - value: dusk\n        tags: [dim, warm_light, dramatic]\n        weight: 2\n      - value: night\n        tags: [dark, cool_light]\n      - value: midnight\n        tags: [dark, cool_light]\n        when: \"'indoor' in location_type_tags or 'fantasy' in location_type_tags\"\n\n  lighting:\n    label: \"Lighting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: soft natural light\n        when: \"'bright' in time_of_day_tags and 'dry' in weather_tags\"\n      - value: harsh midday sun\n        when: \"time_of_day == 'afternoon' and 'hot' in season_tags\"\n      - value: dappled sunlight through leaves\n        when: \"'nature' in setting_tags and 'bright' in time_of_day_tags\"\n      - value: golden hour rays\n        when: \"'warm_light' in time_of_day_tags and 'dramatic' in time_of_day_tags\"\n      - value: overcast diffused light\n        when: \"'grey' in weather_tags\"\n      - value: dramatic storm light\n        when: \"'dramatic' in weather_tags\"\n      - value: moonlight\n        when: \"'dark' in time_of_day_tags and 'outdoor' in location_type_tags\"\n      - value: warm cafe glow\n        when: \"setting == 'cozy cafe'\"\n      - value: candlelight\n        when: \"'indoor' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: neon reflections\n        when: \"'city' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: magical ambient light\n        when: \"'fantasy' in location_type_tags\"\n      - value: lantern light\n        when: \"'traditional' in location_type_tags and 'dark' in time_of_day_tags\"\n\n  location_notes:\n    label: \"Extra Location Notes\"\n    group: \"Location\"\n    type: text\n\nfragments:\n  loc_weather_season: \"{{ season }}{% if 'outdoor' in location_type_tags %}, {{ weather }}{% endif %}\"\n  loc_atmosphere: \"{{ time_of_day }}, {{ lighting }}\"\n  location: \"{{ setting }}, {{ fragment.loc_weather_season }}, {{ fragment.loc_atmosphere }}{% if location_notes %}, {{ location_notes }}{% endif %}\"\n",
-        "variables:\n\n  location_type:\n    label: \"Location Type\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: urban\n        tags: [outdoor, city]\n      - value: nature\n        tags: [outdoor, nature]\n      - value: coastal\n        tags: [outdoor, nature, coastal]\n      - value: indoor\n        tags: [indoor]\n      - value: fantasy realm\n        tags: [outdoor, fantasy]\n      - value: traditional\n        tags: [outdoor, traditional]\n\n  setting:\n    label: \"Setting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      # urban\n      - value: city street\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: rooftop\n        tags: [urban, elevated]\n        when: \"'city' in location_type_tags\"\n      - value: back alley\n        tags: [urban, narrow]\n        when: \"'city' in location_type_tags\"\n      - value: train station platform\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: shopping arcade\n        tags: [urban, covered]\n        when: \"'city' in location_type_tags\"\n      # nature\n      - value: forest path\n        tags: [nature, enclosed]\n        when: \"'nature' in location_type_tags\"\n      - value: mountain overlook\n        tags: [nature, elevated]\n        when: \"'nature' in location_type_tags\"\n      - value: riverbank\n        tags: [nature, water]\n        when: \"'nature' in location_type_tags\"\n      - value: meadow\n        tags: [nature, open]\n        when: \"'nature' in location_type_tags\"\n      # coastal\n      - value: sandy beach\n        tags: [coastal, open]\n        when: \"'coastal' in location_type_tags\"\n      - value: cliff overlooking the sea\n        tags: [coastal, elevated]\n        when: \"'coastal' in location_type_tags\"\n      - value: seaside pier\n        tags: [coastal, water]\n        when: \"'coastal' in location_type_tags\"\n      # indoor\n      - value: cozy cafe\n        tags: [indoor, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: library\n        tags: [indoor, quiet]\n        when: \"'indoor' in location_type_tags\"\n      - value: bedroom\n        tags: [indoor, intimate]\n        when: \"'indoor' in location_type_tags\"\n      - value: school classroom\n        tags: [indoor, school]\n        when: \"'indoor' in location_type_tags\"\n      - value: cathedral interior\n        tags: [indoor, grand]\n        when: \"'indoor' in location_type_tags\"\n      # fantasy\n      - value: ancient ruins\n        tags: [fantasy, outdoor]\n        when: \"'fantasy' in location_type_tags\"\n      - value: floating island\n        tags: [fantasy, elevated]\n        when: \"'fantasy' in location_type_tags\"\n      - value: enchanted forest\n        tags: [fantasy, nature]\n        when: \"'fantasy' in location_type_tags\"\n      # traditional\n      - value: shrine steps\n        tags: [traditional, elevated]\n        when: \"'traditional' in location_type_tags\"\n      - value: Japanese garden\n        tags: [traditional, nature]\n        when: \"'traditional' in location_type_tags\"\n      - value: bamboo grove\n        tags: [traditional, nature, enclosed]\n        when: \"'traditional' in location_type_tags\"\n\n  season:\n    label: \"Season\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: spring\n        tags: [warm, bright, blooming]\n        weight: 2\n      - value: summer\n        tags: [hot, bright]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: autumn\n        tags: [cool, moody]\n      - value: winter\n        tags: [cold, dark]\n\n  weather:\n    label: \"Weather\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: clear sky\n        tags: [dry, bright]\n        weight: 3\n        unless: \"'indoor' in location_type_tags\"\n      - value: scattered clouds\n        tags: [dry]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: overcast\n        tags: [grey, dry]\n        unless: \"'indoor' in location_type_tags\"\n      - value: light rain\n        tags: [rainy, wet]\n        unless: \"'indoor' in location_type_tags\"\n      - value: heavy rain\n        tags: [rainy, wet, dramatic]\n        unless: \"'indoor' in location_type_tags or season == 'winter'\"\n      - value: snowfall\n        tags: [snowy, cold]\n        when: \"season == 'winter' and 'outdoor' in location_type_tags\"\n      - value: cherry blossoms drifting\n        tags: [dry, magical, blooming]\n        when: \"season == 'spring' and 'outdoor' in location_type_tags\"\n      - value: autumn leaves falling\n        tags: [dry, magical]\n        when: \"season == 'autumn' and 'outdoor' in location_type_tags\"\n      - value: indoor lighting\n        tags: [dry, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: golden mist\n        tags: [dry, magical]\n        when: \"'fantasy' in location_type_tags\"\n\n  time_of_day:\n    label: \"Time of Day\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: dawn\n        tags: [dim, cool_light]\n        unless: \"'indoor' in location_type_tags\"\n      - value: morning\n        tags: [bright, warm_light]\n      - value: afternoon\n        tags: [bright, warm_light]\n      - value: golden hour\n        tags: [warm_light, dramatic]\n        weight: 2\n      - value: dusk\n        tags: [dim, warm_light, dramatic]\n        weight: 2\n      - value: night\n        tags: [dark, cool_light]\n      - value: midnight\n        tags: [dark, cool_light]\n        when: \"'indoor' in location_type_tags or 'fantasy' in location_type_tags\"\n\n  lighting:\n    label: \"Lighting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: soft natural light\n        when: \"'bright' in time_of_day_tags and 'dry' in weather_tags\"\n      - value: harsh midday sun\n        when: \"time_of_day == 'afternoon' and 'hot' in season_tags\"\n      - value: dappled sunlight through leaves\n        when: \"'nature' in setting_tags and 'bright' in time_of_day_tags\"\n      - value: golden hour rays\n        when: \"'warm_light' in time_of_day_tags and 'dramatic' in time_of_day_tags\"\n      - value: overcast diffused light\n        when: \"'grey' in weather_tags\"\n      - value: dramatic storm light\n        when: \"'dramatic' in weather_tags\"\n      - value: moonlight\n        when: \"'dark' in time_of_day_tags and 'outdoor' in location_type_tags\"\n      - value: warm cafe glow\n        when: \"setting == 'cozy cafe'\"\n      - value: candlelight\n        when: \"'indoor' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: neon reflections\n        when: \"'city' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: magical ambient light\n        when: \"'fantasy' in location_type_tags\"\n      - value: lantern light\n        when: \"'traditional' in location_type_tags and 'dark' in time_of_day_tags\"\n\n  location_notes:\n    label: \"Extra Location Notes\"\n    group: \"Location\"\n    type: text\n\nfragments:\n  loc_weather_season: \"{{ season }}{% if 'outdoor' in location_type_tags %}, {{ weather }}{% endif %}\"\n  loc_atmosphere: \"{{ time_of_day }}, {{ lighting }}\"\n  location: \"{{ setting }}, {{ fragment.loc_weather_season }}, {{ fragment.loc_atmosphere }}{% if location_notes %}, {{ location_notes }}{% endif %}\"\n"
+        "variables:\n\n  location_type:\n    label: \"Location Type\"\n    group: \"Location\" \n    type: select\n    count: 1\n    options:\n      - value: urban\n        tags: [outdoor, city]\n      - value: nature\n        tags: [outdoor, nature]\n      - value: coastal\n        tags: [outdoor, nature, coastal]\n      - value: indoor\n        tags: [indoor]\n      - value: fantasy realm\n        tags: [outdoor, fantasy]\n      - value: traditional\n        tags: [outdoor, traditional]\n\n  setting:\n    label: \"Setting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      # urban\n      - value: city street\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: rooftop\n        tags: [urban, elevated]\n        when: \"'city' in location_type_tags\"\n      - value: back alley\n        tags: [urban, narrow]\n        when: \"'city' in location_type_tags\"\n      - value: train station platform\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: shopping arcade\n        tags: [urban, covered]\n        when: \"'city' in location_type_tags\"\n      # nature\n      - value: forest path\n        tags: [nature, enclosed]\n        when: \"'nature' in location_type_tags\"\n      - value: mountain overlook\n        tags: [nature, elevated]\n        when: \"'nature' in location_type_tags\"\n      - value: riverbank\n        tags: [nature, water]\n        when: \"'nature' in location_type_tags\"\n      - value: meadow\n        tags: [nature, open]\n        when: \"'nature' in location_type_tags\"\n      # coastal\n      - value: sandy beach\n        tags: [coastal, open]\n        when: \"'coastal' in location_type_tags\"\n      - value: cliff overlooking the sea\n        tags: [coastal, elevated]\n        when: \"'coastal' in location_type_tags\"\n      - value: seaside pier\n        tags: [coastal, water]\n        when: \"'coastal' in location_type_tags\"\n      # indoor\n      - value: cozy cafe\n        tags: [indoor, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: library\n        tags: [indoor, quiet]\n        when: \"'indoor' in location_type_tags\"\n      - value: bedroom\n        tags: [indoor, intimate]\n        when: \"'indoor' in location_type_tags\"\n      - value: school classroom\n        tags: [indoor, school]\n        when: \"'indoor' in location_type_tags\"\n      - value: cathedral interior\n        tags: [indoor, grand]\n        when: \"'indoor' in location_type_tags\"\n      # fantasy\n      - value: ancient ruins\n        tags: [fantasy, outdoor]\n        when: \"'fantasy' in location_type_tags\"\n      - value: floating island\n        tags: [fantasy, elevated]\n        when: \"'fantasy' in location_type_tags\"\n      - value: enchanted forest\n        tags: [fantasy, nature]\n        when: \"'fantasy' in location_type_tags\"\n      # traditional\n      - value: shrine steps\n        tags: [traditional, elevated]\n        when: \"'traditional' in location_type_tags\"\n      - value: Japanese garden\n        tags: [traditional, nature]\n        when: \"'traditional' in location_type_tags\"\n      - value: bamboo grove\n        tags: [traditional, nature, enclosed]\n        when: \"'traditional' in location_type_tags\"\n\n  season:\n    label: \"Season\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: spring\n        tags: [warm, bright, blooming]\n        weight: 2\n      - value: summer\n        tags: [hot, bright]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: autumn\n        tags: [cool, moody]\n      - value: winter\n        tags: [cold, dark]\n\n  weather:\n    label: \"Weather\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: clear sky\n        tags: [dry, bright]\n        weight: 3\n        unless: \"'indoor' in location_type_tags\"\n      - value: scattered clouds\n        tags: [dry]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: overcast\n        tags: [grey, dry]\n        unless: \"'indoor' in location_type_tags\"\n      - value: light rain\n        tags: [rainy, wet]\n        unless: \"'indoor' in location_type_tags\"\n      - value: heavy rain\n        tags: [rainy, wet, dramatic]\n        unless: \"'indoor' in location_type_tags or season == 'winter'\"\n      - value: snowfall\n        tags: [snowy, cold]\n        when: \"season == 'winter' and 'outdoor' in location_type_tags\"\n      - value: cherry blossoms drifting\n        tags: [dry, magical, blooming]\n        when: \"season == 'spring' and 'outdoor' in location_type_tags\"\n      - value: autumn leaves falling\n        tags: [dry, magical]\n        when: \"season == 'autumn' and 'outdoor' in location_type_tags\"\n      - value: indoor lighting\n        tags: [dry, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: golden mist\n        tags: [dry, magical]\n        when: \"'fantasy' in location_type_tags\"\n\n  time_of_day:\n    label: \"Time of Day\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: dawn\n        tags: [dim, cool_light]\n        unless: \"'indoor' in location_type_tags\"\n      - value: morning\n        tags: [bright, warm_light]\n      - value: afternoon\n        tags: [bright, warm_light]\n      - value: golden hour\n        tags: [warm_light, dramatic]\n        weight: 2\n      - value: dusk\n        tags: [dim, warm_light, dramatic]\n        weight: 2\n      - value: night\n        tags: [dark, cool_light]\n      - value: midnight\n        tags: [dark, cool_light]\n        when: \"'indoor' in location_type_tags or 'fantasy' in location_type_tags\"\n\n  lighting:\n    label: \"Lighting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: soft natural light\n        when: \"'bright' in time_of_day_tags and 'dry' in weather_tags\"\n      - value: harsh midday sun\n        when: \"time_of_day == 'afternoon' and 'hot' in season_tags\"\n      - value: dappled sunlight through leaves\n        when: \"'nature' in setting_tags and 'bright' in time_of_day_tags\"\n      - value: golden hour rays\n        when: \"'warm_light' in time_of_day_tags and 'dramatic' in time_of_day_tags\"\n      - value: overcast diffused light\n        when: \"'grey' in weather_tags\"\n      - value: dramatic storm light\n        when: \"'dramatic' in weather_tags\"\n      - value: moonlight\n        when: \"'dark' in time_of_day_tags and 'outdoor' in location_type_tags\"\n      - value: warm cafe glow\n        when: \"setting == 'cozy cafe'\"\n      - value: candlelight\n        when: \"'indoor' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: neon reflections\n        when: \"'city' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: magical ambient light\n        when: \"'fantasy' in location_type_tags\"\n      - value: lantern light\n        when: \"'traditional' in location_type_tags and 'dark' in time_of_day_tags\"\n\n  location_notes:\n    label: \"Extra Location Notes\"\n    group: \"Location\"\n    type: text\n\nfragments:\n  loc_weather_season: \"{{ season }}{% if 'outdoor' in location_type_tags %}, {{ weather }}{% endif %}\"\n  loc_atmosphere: \"{{ time_of_day }}, {{ lighting }}\"\n  location: \"{{ setting }}, {{ fragment.loc_weather_season }}, {{ fragment.loc_atmosphere }}{% if location_notes %}, {{ location_notes }}{% endif %}\"\n",
+        "variables:\n\n  location_type:\n    label: \"Location Type\"\n    group: \"Location\" \n    type: select\n    count: 1\n    options:\n      - value: urban\n        tags: [outdoor, city]\n      - value: nature\n        tags: [outdoor, nature]\n      - value: coastal\n        tags: [outdoor, nature, coastal]\n      - value: indoor\n        tags: [indoor]\n      - value: fantasy realm\n        tags: [outdoor, fantasy]\n      - value: traditional\n        tags: [outdoor, traditional]\n\n  setting:\n    label: \"Setting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      # urban\n      - value: city street\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: rooftop\n        tags: [urban, elevated]\n        when: \"'city' in location_type_tags\"\n      - value: back alley\n        tags: [urban, narrow]\n        when: \"'city' in location_type_tags\"\n      - value: train station platform\n        tags: [urban]\n        when: \"'city' in location_type_tags\"\n      - value: shopping arcade\n        tags: [urban, covered]\n        when: \"'city' in location_type_tags\"\n      # nature\n      - value: forest path\n        tags: [nature, enclosed]\n        when: \"'nature' in location_type_tags\"\n      - value: mountain overlook\n        tags: [nature, elevated]\n        when: \"'nature' in location_type_tags\"\n      - value: riverbank\n        tags: [nature, water]\n        when: \"'nature' in location_type_tags\"\n      - value: meadow\n        tags: [nature, open]\n        when: \"'nature' in location_type_tags\"\n      # coastal\n      - value: sandy beach\n        tags: [coastal, open]\n        when: \"'coastal' in location_type_tags\"\n      - value: cliff overlooking the sea\n        tags: [coastal, elevated]\n        when: \"'coastal' in location_type_tags\"\n      - value: seaside pier\n        tags: [coastal, water]\n        when: \"'coastal' in location_type_tags\"\n      # indoor\n      - value: cozy cafe\n        tags: [indoor, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: library\n        tags: [indoor, quiet]\n        when: \"'indoor' in location_type_tags\"\n      - value: bedroom\n        tags: [indoor, intimate]\n        when: \"'indoor' in location_type_tags\"\n      - value: school classroom\n        tags: [indoor, school]\n        when: \"'indoor' in location_type_tags\"\n      - value: cathedral interior\n        tags: [indoor, grand]\n        when: \"'indoor' in location_type_tags\"\n      # fantasy\n      - value: ancient ruins\n        tags: [fantasy, outdoor]\n        when: \"'fantasy' in location_type_tags\"\n      - value: floating island\n        tags: [fantasy, elevated]\n        when: \"'fantasy' in location_type_tags\"\n      - value: enchanted forest\n        tags: [fantasy, nature]\n        when: \"'fantasy' in location_type_tags\"\n      # traditional\n      - value: shrine steps\n        tags: [traditional, elevated]\n        when: \"'traditional' in location_type_tags\"\n      - value: Japanese garden\n        tags: [traditional, nature]\n        when: \"'traditional' in location_type_tags\"\n      - value: bamboo grove\n        tags: [traditional, nature, enclosed]\n        when: \"'traditional' in location_type_tags\"\n\n  season:\n    label: \"Season\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: spring\n        tags: [warm, bright, blooming]\n        weight: 2\n      - value: summer\n        tags: [hot, bright]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: autumn\n        tags: [cool, moody]\n      - value: winter\n        tags: [cold, dark]\n\n  weather:\n    label: \"Weather\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: clear sky\n        tags: [dry, bright]\n        weight: 3\n        unless: \"'indoor' in location_type_tags\"\n      - value: scattered clouds\n        tags: [dry]\n        weight: 2\n        unless: \"'indoor' in location_type_tags\"\n      - value: overcast\n        tags: [grey, dry]\n        unless: \"'indoor' in location_type_tags\"\n      - value: light rain\n        tags: [rainy, wet]\n        unless: \"'indoor' in location_type_tags\"\n      - value: heavy rain\n        tags: [rainy, wet, dramatic]\n        unless: \"'indoor' in location_type_tags or season == 'winter'\"\n      - value: snowfall\n        tags: [snowy, cold]\n        when: \"season == 'winter' and 'outdoor' in location_type_tags\"\n      - value: cherry blossoms drifting\n        tags: [dry, magical, blooming]\n        when: \"season == 'spring' and 'outdoor' in location_type_tags\"\n      - value: autumn leaves falling\n        tags: [dry, magical]\n        when: \"season == 'autumn' and 'outdoor' in location_type_tags\"\n      - value: indoor lighting\n        tags: [dry, warm]\n        when: \"'indoor' in location_type_tags\"\n      - value: golden mist\n        tags: [dry, magical]\n        when: \"'fantasy' in location_type_tags\"\n\n  time_of_day:\n    label: \"Time of Day\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: dawn\n        tags: [dim, cool_light]\n        unless: \"'indoor' in location_type_tags\"\n      - value: morning\n        tags: [bright, warm_light]\n      - value: afternoon\n        tags: [bright, warm_light]\n      - value: golden hour\n        tags: [warm_light, dramatic]\n        weight: 2\n      - value: dusk\n        tags: [dim, warm_light, dramatic]\n        weight: 2\n      - value: night\n        tags: [dark, cool_light]\n      - value: midnight\n        tags: [dark, cool_light]\n        when: \"'indoor' in location_type_tags or 'fantasy' in location_type_tags\"\n\n  lighting:\n    label: \"Lighting\"\n    group: \"Location\"\n    type: select\n    count: 1\n    options:\n      - value: soft natural light\n        when: \"'bright' in time_of_day_tags and 'dry' in weather_tags\"\n      - value: harsh midday sun\n        when: \"time_of_day == 'afternoon' and 'hot' in season_tags\"\n      - value: dappled sunlight through leaves\n        when: \"'nature' in setting_tags and 'bright' in time_of_day_tags\"\n      - value: golden hour rays\n        when: \"'warm_light' in time_of_day_tags and 'dramatic' in time_of_day_tags\"\n      - value: overcast diffused light\n        when: \"'grey' in weather_tags\"\n      - value: dramatic storm light\n        when: \"'dramatic' in weather_tags\"\n      - value: moonlight\n        when: \"'dark' in time_of_day_tags and 'outdoor' in location_type_tags\"\n      - value: warm cafe glow\n        when: \"setting == 'cozy cafe'\"\n      - value: candlelight\n        when: \"'indoor' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: neon reflections\n        when: \"'city' in location_type_tags and 'dark' in time_of_day_tags\"\n      - value: magical ambient light\n        when: \"'fantasy' in location_type_tags\"\n      - value: lantern light\n        when: \"'traditional' in location_type_tags and 'dark' in time_of_day_tags\"\n\n  location_notes:\n    label: \"Extra Location Notes\"\n    group: \"Location\"\n    type: text\n\nfragments:\n  loc_weather_season: \"{{ season }}{% if 'outdoor' in location_type_tags %}, {{ weather }}{% endif %}\"\n  loc_atmosphere: \"{{ time_of_day }}, {{ lighting }}\"\n  location: \"{{ setting }}, {{ fragment.loc_weather_season }}, {{ fragment.loc_atmosphere }}{% if location_notes %}, {{ location_notes }}{% endif %}\"\n"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 62,
+      "type": "b4a055ea-c6ec-4895-8d40-76f71b52a646",
+      "pos": [
+        860,
+        -620
+      ],
+      "size": [
+        500,
+        610
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "prompt",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 307
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": 522
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            308
+          ]
+        }
+      ],
+      "properties": {
+        "proxyWidgets": [
+          [
+            "50",
+            "text"
+          ],
+          [
+            "28",
+            "width"
+          ],
+          [
+            "28",
+            "height"
+          ],
+          [
+            "49",
+            "steps"
+          ],
+          [
+            "49",
+            "cfg"
+          ],
+          [
+            "49",
+            "seed"
+          ],
+          [
+            "44",
+            "unet_name"
+          ],
+          [
+            "45",
+            "clip_name"
+          ],
+          [
+            "46",
+            "vae_name"
+          ],
+          [
+            "48",
+            "text"
+          ]
+        ],
+        "cnr_id": "comfy-core",
+        "ver": "0.18.1",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 19,
+      "type": "PowerPromptPartial",
+      "pos": [
+        -1480,
+        -620
+      ],
+      "size": [
+        680,
+        670
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "partial",
+          "type": "POWER_PROMPT_PARTIAL",
+          "links": [
+            560
+          ]
+        }
+      ],
+      "title": "Character Design",
+      "properties": {
+        "aux_id": "Kramins/comfyui-power-prompt",
+        "ver": "ae55f4f8d106d7e2b9e01d4a50798f85597450ca",
+        "Node name for S&R": "PowerPromptPartial"
+      },
+      "widgets_values": [
+        "variables:\n\n  char_archetype:\n    label: \"Archetype\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: high school girl\n        tags: [student, young]\n      - value: office worker\n        tags: [adult]\n      - value: shrine maiden\n        tags: [shrine, young]\n      - value: idol\n        tags: [young, performer]\n      - value: knight\n        tags: [adult, warrior]\n      - value: mage\n        tags: [adult, magical]\n\n  hair_length: \n    label: \"Hair Length\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: short hair\n        tags: [short]\n      - value: medium hair \n        tags: [medium]\n        weight: 2 \n      - value: long hair\n        tags: [long]\n        weight: 2\n      - value: very long hair\n        tags: [long, very_long]\n\n  hair_color:\n    label: \"Hair Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: black hair\n        weight: 3\n      - value: brown hair\n        weight: 2\n      - value: blonde hair\n        weight: 2\n      - value: silver hair\n      - value: white hair\n      - value:\n          - pink hair\n          - blue hair\n          - purple hair\n        tags: [vivid]\n\n  hair_style:\n    label: \"Hair Style\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: straight\n      - value: wavy\n      - value: twin tails\n        when: \"'long' in hair_length_tags\"\n      - value: ponytail\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: braided\n        when: \"'long' in hair_length_tags\"\n      - value: bob cut\n        when: \"'short' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: messy bun\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n\n  hair_accessory:\n    label: \"Hair Accessory\"\n    group: \"Character\"\n    type: select\n    count: 0-1\n    options:\n      - value: hair ribbon\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: hair bow\n        when: \"'long' in hair_length_tags\"\n      - value: hair clip\n      - value: flower hair pin\n      - value: headband\n        unless: \"'very_long' in hair_length_tags\"\n      - value: miko hair ornament\n        when: \"'shrine' in char_archetype_tags\"\n\n  eye_color:\n    label: \"Eye Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: brown eyes\n        weight: 3\n      - value: blue eyes\n        weight: 2\n      - value: green eyes\n      - value: grey eyes\n      - value: amber eyes\n      - value:\n          - red eyes\n          - violet eyes\n          - golden eyes\n        when: \"'vivid' in hair_color_tags or 'shrine' in char_archetype_tags or 'magical' in char_archetype_tags\"\n\n  expression:\n    label: \"Expression\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - smiling\n      - gentle smile\n      - serious expression\n      - value: determined expression\n        when: \"'warrior' in char_archetype_tags\"\n      - value: cheerful expression\n        when: \"'performer' in char_archetype_tags or 'student' in char_archetype_tags\"\n      - bashful\n      - serene expression\n\n  char_notes:\n    label: \"Extra Character Notes\"\n    group: \"Character\"\n    type: text\n\nfragments:\n  char_hair: \"{{ hair_color }}, {{ hair_length }}, {{ hair_style }}{% if hair_accessory %}, {{ hair_accessory }}{% endif %}\"\n  char_eyes: \"{{ eye_color }}\"\n  character_design: \"1girl, {{ char_archetype }}, {{ fragment.char_hair }}, {{ fragment.char_eyes }}, {{ expression }}{% if char_notes %}, {{ char_notes }}{% endif %}\"\n",
+        "variables:\n\n  char_archetype:\n    label: \"Archetype\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: high school girl\n        tags: [student, young]\n      - value: office worker\n        tags: [adult]\n      - value: shrine maiden\n        tags: [shrine, young]\n      - value: idol\n        tags: [young, performer]\n      - value: knight\n        tags: [adult, warrior]\n      - value: mage\n        tags: [adult, magical]\n\n  hair_length: \n    label: \"Hair Length\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: short hair\n        tags: [short]\n      - value: medium hair \n        tags: [medium]\n        weight: 2 \n      - value: long hair\n        tags: [long]\n        weight: 2\n      - value: very long hair\n        tags: [long, very_long]\n\n  hair_color:\n    label: \"Hair Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: black hair\n        weight: 3\n      - value: brown hair\n        weight: 2\n      - value: blonde hair\n        weight: 2\n      - value: silver hair\n      - value: white hair\n      - value:\n          - pink hair\n          - blue hair\n          - purple hair\n        tags: [vivid]\n\n  hair_style:\n    label: \"Hair Style\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: straight\n      - value: wavy\n      - value: twin tails\n        when: \"'long' in hair_length_tags\"\n      - value: ponytail\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: braided\n        when: \"'long' in hair_length_tags\"\n      - value: bob cut\n        when: \"'short' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: messy bun\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n\n  hair_accessory:\n    label: \"Hair Accessory\"\n    group: \"Character\"\n    type: select\n    count: 0-1\n    options:\n      - value: hair ribbon\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: hair bow\n        when: \"'long' in hair_length_tags\"\n      - value: hair clip\n      - value: flower hair pin\n      - value: headband\n        unless: \"'very_long' in hair_length_tags\"\n      - value: miko hair ornament\n        when: \"'shrine' in char_archetype_tags\"\n\n  eye_color:\n    label: \"Eye Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: brown eyes\n        weight: 3\n      - value: blue eyes\n        weight: 2\n      - value: green eyes\n      - value: grey eyes\n      - value: amber eyes\n      - value:\n          - red eyes\n          - violet eyes\n          - golden eyes\n        when: \"'vivid' in hair_color_tags or 'shrine' in char_archetype_tags or 'magical' in char_archetype_tags\"\n\n  expression:\n    label: \"Expression\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - smiling\n      - gentle smile\n      - serious expression\n      - value: determined expression\n        when: \"'warrior' in char_archetype_tags\"\n      - value: cheerful expression\n        when: \"'performer' in char_archetype_tags or 'student' in char_archetype_tags\"\n      - bashful\n      - serene expression\n\n  char_notes:\n    label: \"Extra Character Notes\"\n    group: \"Character\"\n    type: text\n\nfragments:\n  char_hair: \"{{ hair_color }}, {{ hair_length }}, {{ hair_style }}{% if hair_accessory %}, {{ hair_accessory }}{% endif %}\"\n  char_eyes: \"{{ eye_color }}\"\n  character_design: \"1girl, {{ char_archetype }}, {{ fragment.char_hair }}, {{ fragment.char_eyes }}, {{ expression }}{% if char_notes %}, {{ char_notes }}{% endif %}\"\n"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 27,
+      "type": "PowerPromptFilePartial",
+      "pos": [
+        -1480,
+        730
+      ],
+      "size": [
+        690,
+        110
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 4,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "partial",
+          "type": "POWER_PROMPT_PARTIAL",
+          "links": [
+            50,
+            562
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "Kramins/comfyui-power-prompt",
+        "ver": "68bc40918e845e76b15b1e1fc298b06cf2d84e0f",
+        "Node name for S&R": "PowerPromptFilePartial"
+      },
+      "widgets_values": [
+        "action-pose.yaml",
+        ""
       ],
       "color": "#232",
       "bgcolor": "#353"
@@ -260,31 +337,44 @@
       "id": 14,
       "type": "PowerPromptNode",
       "pos": [
-        -544.9685299650648,
-        -511.5138707357722
+        -430,
+        -620
       ],
       "size": [
-        745.9781482182915,
-        1036.3841461124398
+        750,
+        1140
       ],
       "flags": {},
-      "order": 7,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": 523
+        },
+        {
           "name": "include_1",
           "type": "POWER_PROMPT_PARTIAL",
-          "link": 40
+          "link": 560
         },
         {
           "name": "include_2",
           "type": "POWER_PROMPT_PARTIAL",
-          "link": 38
+          "link": 561
         },
         {
           "name": "include_3",
           "type": "POWER_PROMPT_PARTIAL",
-          "link": 41
+          "link": 562
+        },
+        {
+          "name": "sign_text",
+          "type": "*",
+          "link": 563
         },
         {
           "name": "include_4",
@@ -315,24 +405,60 @@
         "Node name for S&R": "PowerPromptNode"
       },
       "widgets_values": [
-        "variables:\n  art_style:\n    type: select\n    count: 1\n    options:\n      - anime\n      - manga\n      - cel shading\n      - watercolor illustration\n      - oil painting\n\n  extra_tags:\n    label: \"Extra Tags\"\n    type: text\n\nprompt: |\n  {{ fragment.character_design }},\n  {{ fragment.location }},\n  {{ art_style }},\n  {{ fragment.pose_description }},\n  {% if extra_tags %}{{ extra_tags }},{% endif %}\n  masterpiece, best quality, detailed\n",
+        "includes:\n  - action-pose.yaml\n\nvariables:\n  sign_text:\n    type: input\n  art_style:\n    type: select\n    count: 1\n    options:\n      - anime\n      - manga\n      - cel shading\n      - watercolor illustration\n      - oil painting\n\n  extra_tags:\n    label: \"Extra Tags\"\n    type: text\n\nprompt: |\n  masterpiece, best quality, detailed, safe, fully clothed,\n  {{ fragment.character_design }},\n  {{ fragment.location }},\n  {{ art_style }},\n  {{ fragment.pose_description }},\n  {% if extra_tags %}{{ extra_tags }},{% endif %}\n  holding as sign saying '{{ sign_text }}'\n  \n",
         "{\"char_notes\":\"\",\"setting\":\"random\",\"location_notes\":\"\",\"extra_tags\":\"\"}",
-        365543716903527,
+        1058216184593770,
         "randomize"
       ],
       "color": "#232",
       "bgcolor": "#353"
     },
     {
-      "id": 27,
-      "type": "PowerPromptFilePartial",
+      "id": 37,
+      "type": "PrimitiveStringMultiline",
       "pos": [
-        -1460.435887895258,
-        715.7465538052248
+        -740,
+        -620
       ],
       "size": [
-        681.0295349625519,
-        102
+        270,
+        90
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            563
+          ]
+        }
+      ],
+      "title": "Sign Text",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.26.0",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "Hi From Power Prompt"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 72,
+      "type": "PrimitiveInt",
+      "pos": [
+        350,
+        -60
+      ],
+      "size": [
+        270,
+        82
       ],
       "flags": {},
       "order": 4,
@@ -340,228 +466,24 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "partial",
-          "type": "POWER_PROMPT_PARTIAL",
+          "name": "INT",
+          "type": "INT",
           "links": [
-            41
+            522,
+            523
           ]
         }
       ],
-      "properties": {
-        "aux_id": "Kramins/comfyui-power-prompt",
-        "ver": "68bc40918e845e76b15b1e1fc298b06cf2d84e0f",
-        "Node name for S&R": "PowerPromptFilePartial"
-      },
-      "widgets_values": [
-        "action-pose.yaml",
-        "variables:\n\n  shot_type:\n    label: \"Shot Type\"\n    group: \"Composition\"\n    type: select\n    count: 1\n    options:\n      - value: full body\n        weight: 2\n        tags: [full, shows_legs]\n      - value: cowboy shot\n        weight: 2\n        tags: [upper, shows_legs]\n      - value: upper body\n        weight: 2\n        tags: [upper]\n      - value: portrait\n        tags: [close]\n      - value: close-up\n        tags: [close, face_only]\n      - value: low angle\n        tags: [full, dynamic, low_angle]\n      - value: overhead view\n        tags: [full, dynamic, high_angle]\n\n  pose:\n    label: \"Pose\"\n    group: \"Composition\"\n    type: select\n    count: 1\n    options:\n      - value: standing\n        weight: 3\n        tags: [standing, upright]\n      - value: sitting\n        weight: 2\n        tags: [sitting]\n      - value: kneeling\n        tags: [sitting, low]\n        unless: \"'face_only' in shot_type_tags\"\n      - value: leaning against wall\n        weight: 2\n        tags: [leaning, upright]\n        unless: \"'face_only' in shot_type_tags\"\n      - value: crouching\n        tags: [low, dynamic]\n        when: \"'full' in shot_type_tags or 'shows_legs' in shot_type_tags\"\n      - value: lying down\n        tags: [lying]\n        when: \"'full' in shot_type_tags\"\n      - value: walking\n        weight: 2\n        tags: [moving, upright]\n        unless: \"'face_only' in shot_type_tags\"\n      - value: running\n        tags: [moving, dynamic]\n        when: \"'full' in shot_type_tags or 'shows_legs' in shot_type_tags\"\n      - value: mid-jump\n        tags: [airborne, dynamic]\n        when: \"'full' in shot_type_tags\"\n      - value: looking back over shoulder\n        tags: [turned, upright]\n        unless: \"'face_only' in shot_type_tags\"\n\n  action:\n    label: \"Action\"\n    group: \"Composition\"\n    type: select\n    count: 1\n    options:\n      # universal\n      - value: gazing into the distance\n        weight: 3\n      - value: looking at the camera\n        weight: 3\n      - value: lost in thought\n        weight: 2\n\n      # pose-conditional\n      - value: reading a book\n        weight: 2\n        when: \"'sitting' in pose_tags or 'lying' in pose_tags\"\n      - value: writing in a notebook\n        when: \"'sitting' in pose_tags\"\n      - value: hair blowing in the wind\n        weight: 2\n        when: \"'upright' in pose_tags or 'moving' in pose_tags\"\n      - value: stretching arms above head\n        when: \"'standing' in pose_tags\"\n      - value: arms outstretched\n        when: \"'upright' in pose_tags or 'airborne' in pose_tags\"\n      - value: adjusting hair\n        weight: 2\n        when: \"'upright' in pose_tags or 'sitting' in pose_tags\"\n      - value: looking down at hands\n        when: \"'sitting' in pose_tags or 'kneeling' in pose_tags\"\n\n      # archetype-conditional (requires character partial to be connected)\n      - value: studying, surrounded by books\n        when: \"'student' in char_archetype_tags and 'sitting' in pose_tags\"\n      - value: praying quietly\n        when: \"'shrine' in char_archetype_tags\"\n      - value: battle stance, weapon drawn\n        when: \"'warrior' in char_archetype_tags\"\n      - value: casting a spell, glowing hands\n        when: \"'magical' in char_archetype_tags\"\n      - value: performing for a crowd\n        when: \"'performer' in char_archetype_tags\"\n\n      # location-conditional (requires location partial to be connected)\n      - value: watching the waves\n        when: \"'coastal' in location_type_tags\"\n      - value: watching the city lights\n        when: \"'city' in location_type_tags and 'elevated' in setting_tags\"\n      - value: sitting by a window, watching the rain\n        when: \"'indoor' in location_type_tags and 'sitting' in pose_tags\"\n      - value: walking through falling leaves\n        when: \"'nature' in location_type_tags and 'moving' in pose_tags\"\n\nfragments:\n  pose_description: \"{{ shot_type }}, {{ pose }}, {{ action }}\"\n",
-        ""
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
-      "id": 18,
-      "type": "1e09cd9f-979e-4b9d-9fd5-6931b5dd7125",
-      "pos": [
-        805.4932927689315,
-        227.58508524999988
-      ],
-      "size": [
-        371.05099999999993,
-        346
-      ],
-      "flags": {},
-      "order": 10,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 22
-        },
-        {
-          "name": "latent_image",
-          "type": "LATENT",
-          "link": 23
-        },
-        {
-          "name": "vae",
-          "type": "VAE",
-          "link": 24
-        },
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 25
-        },
-        {
-          "label": "positive prompt",
-          "name": "text",
-          "type": "STRING",
-          "widget": {
-            "name": "text"
-          },
-          "link": 26
-        },
-        {
-          "label": "negative prompt",
-          "name": "text_1",
-          "type": "STRING",
-          "widget": {
-            "name": "text_1"
-          },
-          "link": 27
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            28
-          ]
-        },
-        {
-          "name": "LATENT",
-          "type": "LATENT",
-          "links": null
-        }
-      ],
-      "properties": {
-        "proxyWidgets": [
-          [
-            "6",
-            "text"
-          ],
-          [
-            "7",
-            "text"
-          ],
-          [
-            "3",
-            "seed"
-          ],
-          [
-            "3",
-            "steps"
-          ],
-          [
-            "3",
-            "cfg"
-          ],
-          [
-            "3",
-            "sampler_name"
-          ],
-          [
-            "3",
-            "scheduler"
-          ],
-          [
-            "3",
-            "denoise"
-          ]
-        ],
-        "cnr_id": "comfy-core",
-        "ver": "0.26.0"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 12,
-      "type": "PreviewImage",
-      "pos": [
-        1195.4205518137512,
-        70.89267942093566
-      ],
-      "size": [
-        498.54983939697286,
-        495.2870935758347
-      ],
-      "flags": {},
-      "order": 11,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 28
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": null
-        }
-      ],
+      "title": "seed",
       "properties": {
         "cnr_id": "comfy-core",
-        "ver": "0.25.1",
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 30,
-      "type": "MarkdownNote",
-      "pos": [
-        -1939.4585091999727,
-        463.9993717644063
-      ],
-      "size": [
-        459.4399796905518,
-        346.1650000000001
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [],
-      "properties": {},
-      "widgets_values": [
-        "## Action & Pose Partial\n\n1. Download **action-pose.yaml**:\n   [github.com/Kramins/comfyui-power-prompt](https://github.com/Kramins/comfyui-power-prompt/blob/main/examples/action-pose.yaml)\n\n2. Click **Upload** on the node and select the downloaded file\n\n3. Add to your prompt template:\n   `{{ fragment.pose_description }}`\n"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 19,
-      "type": "PowerPromptPartial",
-      "pos": [
-        -1455.1387375993788,
-        -611.2295207500471
-      ],
-      "size": [
-        699.3808254134519,
-        670.3449891689147
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "partial",
-          "type": "POWER_PROMPT_PARTIAL",
-          "links": [
-            40
-          ]
-        }
-      ],
-      "title": "Character Design",
-      "properties": {
-        "aux_id": "Kramins/comfyui-power-prompt",
-        "ver": "ae55f4f8d106d7e2b9e01d4a50798f85597450ca",
-        "Node name for S&R": "PowerPromptPartial"
+        "ver": "0.26.0",
+        "Node name for S&R": "PrimitiveInt"
       },
       "widgets_values": [
-        "variables:\n\n  char_archetype:\n    label: \"Archetype\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: high school girl\n        tags: [student, young]\n      - value: office worker\n        tags: [adult]\n      - value: shrine maiden\n        tags: [shrine, young]\n      - value: idol\n        tags: [young, performer]\n      - value: knight\n        tags: [adult, warrior]\n      - value: mage\n        tags: [adult, magical]\n\n  hair_length:\n    label: \"Hair Length\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: short hair\n        tags: [short]\n      - value: medium hair\n        tags: [medium]\n        weight: 2\n      - value: long hair\n        tags: [long]\n        weight: 2\n      - value: very long hair\n        tags: [long, very_long]\n\n  hair_color:\n    label: \"Hair Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: black hair\n        weight: 3\n      - value: brown hair\n        weight: 2\n      - value: blonde hair\n        weight: 2\n      - value: silver hair\n      - value: white hair\n      - value:\n          - pink hair\n          - blue hair\n          - purple hair\n        tags: [vivid]\n\n  hair_style:\n    label: \"Hair Style\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: straight\n      - value: wavy\n      - value: twin tails\n        when: \"'long' in hair_length_tags\"\n      - value: ponytail\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: braided\n        when: \"'long' in hair_length_tags\"\n      - value: bob cut\n        when: \"'short' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: messy bun\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n\n  hair_accessory:\n    label: \"Hair Accessory\"\n    group: \"Character\"\n    type: select\n    count: 0-1\n    options:\n      - value: hair ribbon\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: hair bow\n        when: \"'long' in hair_length_tags\"\n      - value: hair clip\n      - value: flower hair pin\n      - value: headband\n        unless: \"'very_long' in hair_length_tags\"\n      - value: miko hair ornament\n        when: \"'shrine' in char_archetype_tags\"\n\n  eye_color:\n    label: \"Eye Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: brown eyes\n        weight: 3\n      - value: blue eyes\n        weight: 2\n      - value: green eyes\n      - value: grey eyes\n      - value: amber eyes\n      - value:\n          - red eyes\n          - violet eyes\n          - golden eyes\n        when: \"'vivid' in hair_color_tags or 'shrine' in char_archetype_tags or 'magical' in char_archetype_tags\"\n\n  expression:\n    label: \"Expression\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - smiling\n      - gentle smile\n      - serious expression\n      - value: determined expression\n        when: \"'warrior' in char_archetype_tags\"\n      - value: cheerful expression\n        when: \"'performer' in char_archetype_tags or 'student' in char_archetype_tags\"\n      - bashful\n      - serene expression\n\n  char_notes:\n    label: \"Extra Character Notes\"\n    group: \"Character\"\n    type: text\n\nfragments:\n  char_hair: \"{{ hair_color }}, {{ hair_length }}, {{ hair_style }}{% if hair_accessory %}, {{ hair_accessory }}{% endif %}\"\n  char_eyes: \"{{ eye_color }}\"\n  character_design: \"1girl, {{ char_archetype }}, {{ fragment.char_hair }}, {{ fragment.char_eyes }}, {{ expression }}{% if char_notes %}, {{ char_notes }}{% endif %}\"\n",
-        "variables:\n\n  char_archetype:\n    label: \"Archetype\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: high school girl\n        tags: [student, young]\n      - value: office worker\n        tags: [adult]\n      - value: shrine maiden\n        tags: [shrine, young]\n      - value: idol\n        tags: [young, performer]\n      - value: knight\n        tags: [adult, warrior]\n      - value: mage\n        tags: [adult, magical]\n\n  hair_length:\n    label: \"Hair Length\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: short hair\n        tags: [short]\n      - value: medium hair\n        tags: [medium]\n        weight: 2\n      - value: long hair\n        tags: [long]\n        weight: 2\n      - value: very long hair\n        tags: [long, very_long]\n\n  hair_color:\n    label: \"Hair Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: black hair\n        weight: 3\n      - value: brown hair\n        weight: 2\n      - value: blonde hair\n        weight: 2\n      - value: silver hair\n      - value: white hair\n      - value:\n          - pink hair\n          - blue hair\n          - purple hair\n        tags: [vivid]\n\n  hair_style:\n    label: \"Hair Style\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: straight\n      - value: wavy\n      - value: twin tails\n        when: \"'long' in hair_length_tags\"\n      - value: ponytail\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: braided\n        when: \"'long' in hair_length_tags\"\n      - value: bob cut\n        when: \"'short' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: messy bun\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n\n  hair_accessory:\n    label: \"Hair Accessory\"\n    group: \"Character\"\n    type: select\n    count: 0-1\n    options:\n      - value: hair ribbon\n        when: \"'long' in hair_length_tags or 'medium' in hair_length_tags\"\n      - value: hair bow\n        when: \"'long' in hair_length_tags\"\n      - value: hair clip\n      - value: flower hair pin\n      - value: headband\n        unless: \"'very_long' in hair_length_tags\"\n      - value: miko hair ornament\n        when: \"'shrine' in char_archetype_tags\"\n\n  eye_color:\n    label: \"Eye Color\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - value: brown eyes\n        weight: 3\n      - value: blue eyes\n        weight: 2\n      - value: green eyes\n      - value: grey eyes\n      - value: amber eyes\n      - value:\n          - red eyes\n          - violet eyes\n          - golden eyes\n        when: \"'vivid' in hair_color_tags or 'shrine' in char_archetype_tags or 'magical' in char_archetype_tags\"\n\n  expression:\n    label: \"Expression\"\n    group: \"Character\"\n    type: select\n    count: 1\n    options:\n      - smiling\n      - gentle smile\n      - serious expression\n      - value: determined expression\n        when: \"'warrior' in char_archetype_tags\"\n      - value: cheerful expression\n        when: \"'performer' in char_archetype_tags or 'student' in char_archetype_tags\"\n      - bashful\n      - serene expression\n\n  char_notes:\n    label: \"Extra Character Notes\"\n    group: \"Character\"\n    type: text\n\nfragments:\n  char_hair: \"{{ hair_color }}, {{ hair_length }}, {{ hair_style }}{% if hair_accessory %}, {{ hair_accessory }}{% endif %}\"\n  char_eyes: \"{{ eye_color }}\"\n  character_design: \"1girl, {{ char_archetype }}, {{ fragment.char_hair }}, {{ fragment.char_eyes }}, {{ expression }}{% if char_notes %}, {{ char_notes }}{% endif %}\"\n"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
+        1008,
+        "fixed"
+      ]
     }
   ],
   "links": [
@@ -582,329 +504,404 @@
       "STRING"
     ],
     [
-      22,
-      4,
+      50,
+      27,
       0,
-      18,
-      0,
-      "MODEL"
+      14,
+      6,
+      "POWER_PROMPT_PARTIAL"
     ],
     [
-      23,
-      5,
-      0,
-      18,
-      1,
-      "LATENT"
-    ],
-    [
-      24,
-      4,
-      2,
-      18,
-      2,
-      "VAE"
-    ],
-    [
-      25,
-      4,
-      1,
-      18,
-      3,
-      "CLIP"
-    ],
-    [
-      26,
+      307,
       15,
       0,
-      18,
-      4,
+      62,
+      0,
       "STRING"
     ],
     [
-      27,
-      17,
+      308,
+      62,
       0,
-      18,
-      5,
-      "STRING"
-    ],
-    [
-      28,
-      18,
-      0,
-      12,
+      63,
       0,
       "IMAGE"
     ],
     [
-      38,
-      23,
+      504,
+      37,
+      0,
+      14,
+      6,
+      "STRING"
+    ],
+    [
+      522,
+      72,
+      0,
+      62,
+      1,
+      "INT"
+    ],
+    [
+      523,
+      72,
+      0,
+      14,
+      0,
+      "INT"
+    ],
+    [
+      560,
+      19,
       0,
       14,
       1,
       "POWER_PROMPT_PARTIAL"
     ],
     [
-      40,
-      19,
-      0,
-      14,
-      0,
-      "POWER_PROMPT_PARTIAL"
-    ],
-    [
-      41,
-      27,
+      561,
+      23,
       0,
       14,
       2,
       "POWER_PROMPT_PARTIAL"
+    ],
+    [
+      562,
+      27,
+      0,
+      14,
+      3,
+      "POWER_PROMPT_PARTIAL"
+    ],
+    [
+      563,
+      37,
+      0,
+      14,
+      4,
+      "STRING"
     ]
   ],
   "groups": [],
   "definitions": {
     "subgraphs": [
       {
-        "id": "1e09cd9f-979e-4b9d-9fd5-6931b5dd7125",
+        "id": "b4a055ea-c6ec-4895-8d40-76f71b52a646",
         "version": 1,
         "state": {
-          "lastGroupId": 0,
-          "lastNodeId": 30,
-          "lastLinkId": 41,
+          "lastGroupId": 3,
+          "lastNodeId": 79,
+          "lastLinkId": 563,
           "lastRerouteId": 0
         },
         "revision": 0,
         "config": {},
-        "name": "KSampler Plus",
+        "name": "Text to Image (Anima)",
         "inputNode": {
           "id": -10,
           "bounding": [
-            820.1983002679107,
-            224.2138762251892,
-            140.5199966430664,
-            288
+            -330,
+            530,
+            128,
+            248
           ]
         },
         "outputNode": {
           "id": -20,
           "bounding": [
-            2122.0765240597484,
-            274.2138762251892,
+            1229.9999873482075,
+            505,
             128,
-            88
+            68
           ]
         },
         "inputs": [
           {
-            "id": "0756c930-0073-4d5b-a176-678bfa5d54ab",
-            "name": "model",
-            "type": "MODEL",
-            "linkIds": [
-              1
-            ],
-            "localized_name": "model",
-            "pos": [
-              936.7182969109771,
-              248.2138762251892
-            ]
-          },
-          {
-            "id": "11df96e4-1671-4cbd-a2ec-26eb5787b1a5",
-            "name": "latent_image",
-            "type": "LATENT",
-            "linkIds": [
-              2
-            ],
-            "localized_name": "latent_image",
-            "pos": [
-              936.7182969109771,
-              268.2138762251892
-            ]
-          },
-          {
-            "id": "9b80bb87-9fe7-41c6-9dc5-a729796326db",
-            "name": "vae",
-            "type": "VAE",
-            "linkIds": [
-              8
-            ],
-            "localized_name": "vae",
-            "pos": [
-              936.7182969109771,
-              288.2138762251892
-            ]
-          },
-          {
-            "id": "43b63cbd-bf79-4fda-aed1-cdf142d2597a",
-            "name": "clip",
-            "type": "CLIP",
-            "linkIds": [
-              3,
-              5
-            ],
-            "localized_name": "clip",
-            "pos": [
-              936.7182969109771,
-              308.2138762251892
-            ]
-          },
-          {
-            "id": "f4513b73-18e6-4da3-ba3f-f693d6101bd7",
+            "id": "4693f350-6ba0-446d-80d4-3038c661d26c",
             "name": "text",
             "type": "STRING",
             "linkIds": [
-              20
+              95
             ],
-            "localized_name": "text",
-            "label": "positive prompt",
+            "label": "prompt",
             "pos": [
-              936.7182969109771,
-              328.2138762251892
+              -226,
+              554
             ]
           },
           {
-            "id": "89989b78-0d60-42b1-97d5-44bb619e11fe",
-            "name": "text_1",
-            "type": "STRING",
-            "linkIds": [
-              21
-            ],
-            "localized_name": "text_1",
-            "label": "negative prompt",
-            "pos": [
-              936.7182969109771,
-              348.2138762251892
-            ]
-          },
-          {
-            "id": "18f660aa-fdc0-47d1-a885-16567e797f6e",
-            "name": "seed",
+            "id": "4a7886a9-4ed7-49bb-afc2-977bb78a303d",
+            "name": "width",
             "type": "INT",
             "linkIds": [
-              29
+              96
             ],
             "pos": [
-              936.7182969109771,
-              368.2138762251892
+              -226,
+              574
             ]
           },
           {
-            "id": "6623f24b-5ec6-4ffb-905c-018e4806ce48",
+            "id": "f6c04461-d29e-49e3-8790-07bb662bbbfe",
+            "name": "height",
+            "type": "INT",
+            "linkIds": [
+              97
+            ],
+            "pos": [
+              -226,
+              594
+            ]
+          },
+          {
+            "id": "7a24f998-3808-4837-8bff-52304ad09fb6",
             "name": "steps",
             "type": "INT",
             "linkIds": [
-              30
+              98
             ],
             "pos": [
-              936.7182969109771,
-              388.2138762251892
+              -226,
+              614
             ]
           },
           {
-            "id": "a5da1781-4f2d-4eaf-9a87-c6caabcc0ba8",
+            "id": "aaa99698-b222-40fe-b946-28067528a85c",
             "name": "cfg",
             "type": "FLOAT",
             "linkIds": [
-              31
+              99
             ],
             "pos": [
-              936.7182969109771,
-              408.2138762251892
+              -226,
+              634
             ]
           },
           {
-            "id": "3fa09859-a848-4824-8224-ea1927001485",
-            "name": "sampler_name",
+            "id": "053df9ae-7311-4816-aa23-7fa13c656ced",
+            "name": "seed",
+            "type": "INT",
+            "linkIds": [
+              521
+            ],
+            "pos": [
+              -226,
+              654
+            ]
+          },
+          {
+            "id": "c59194ea-015c-41a7-8edd-ae7ffc220b63",
+            "name": "unet_name",
             "type": "COMBO",
             "linkIds": [
-              32
+              101
             ],
             "pos": [
-              936.7182969109771,
-              428.2138762251892
+              -226,
+              674
             ]
           },
           {
-            "id": "cc2538a7-ce89-4605-addb-f68acd618482",
-            "name": "scheduler",
+            "id": "e655aa3b-2db7-4e25-9ea2-61550fa7ae2d",
+            "name": "clip_name",
             "type": "COMBO",
             "linkIds": [
-              33
+              102
             ],
             "pos": [
-              936.7182969109771,
-              448.2138762251892
+              -226,
+              694
             ]
           },
           {
-            "id": "8c7ece77-4d13-419a-a5bb-28472c0a7b51",
-            "name": "denoise",
-            "type": "FLOAT",
+            "id": "94965a7a-74dd-4f5a-87e3-9f87995d554f",
+            "name": "vae_name",
+            "type": "COMBO",
             "linkIds": [
-              34
+              103
             ],
             "pos": [
-              936.7182969109771,
-              468.2138762251892
+              -226,
+              714
+            ]
+          },
+          {
+            "id": "3afcf27e-1fe7-4dd1-a735-a095cec536eb",
+            "name": "text_1",
+            "type": "STRING",
+            "linkIds": [
+              369
+            ],
+            "pos": [
+              -226,
+              734
             ]
           }
         ],
         "outputs": [
           {
-            "id": "2eec5c89-fbe1-48da-a27c-82093136fe6e",
+            "id": "ef85ac0a-2152-4232-bfa1-929cfc913718",
             "name": "IMAGE",
             "type": "IMAGE",
             "linkIds": [
-              12
+              82
             ],
             "localized_name": "IMAGE",
             "pos": [
-              2146.0765240597484,
-              298.2138762251892
-            ]
-          },
-          {
-            "id": "32df2dbd-3f8b-433f-9b5d-184e5f4e617d",
-            "name": "LATENT",
-            "type": "LATENT",
-            "linkIds": [
-              35
-            ],
-            "pos": [
-              2146.0765240597484,
-              318.2138762251892
+              1253.9999873482075,
+              529
             ]
           }
         ],
         "widgets": [],
         "nodes": [
           {
-            "id": 8,
-            "type": "VAEDecode",
+            "id": 45,
+            "type": "CLIPLoader",
             "pos": [
-              1852.0765240597482,
-              210.73501300995787
+              -60,
+              380
             ],
             "size": [
-              210,
-              46
+              310,
+              150
+            ],
+            "flags": {},
+            "order": 2,
+            "mode": 0,
+            "inputs": [
+              {
+                "localized_name": "clip_name",
+                "name": "clip_name",
+                "type": "COMBO",
+                "widget": {
+                  "name": "clip_name"
+                },
+                "link": 102
+              }
+            ],
+            "outputs": [
+              {
+                "localized_name": "CLIP",
+                "name": "CLIP",
+                "type": "CLIP",
+                "links": [
+                  80,
+                  81
+                ]
+              }
+            ],
+            "properties": {
+              "cnr_id": "comfy-core",
+              "ver": "0.11.0",
+              "Node name for S&R": "CLIPLoader",
+              "enableTabs": false,
+              "tabWidth": 65,
+              "tabXOffset": 10,
+              "hasSecondTab": false,
+              "secondTabText": "Send Back",
+              "secondTabOffset": 80,
+              "secondTabWidth": 65,
+              "models": [
+                {
+                  "name": "qwen_3_06b_base.safetensors",
+                  "url": "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/text_encoders/qwen_3_06b_base.safetensors",
+                  "directory": "text_encoders"
+                }
+              ]
+            },
+            "widgets_values": [
+              "qwen_3_06b_base.safetensors",
+              "stable_diffusion",
+              "default"
+            ]
+          },
+          {
+            "id": 46,
+            "type": "VAELoader",
+            "pos": [
+              -50,
+              610
+            ],
+            "size": [
+              310,
+              100
             ],
             "flags": {},
             "order": 3,
             "mode": 0,
             "inputs": [
               {
+                "localized_name": "vae_name",
+                "name": "vae_name",
+                "type": "COMBO",
+                "widget": {
+                  "name": "vae_name"
+                },
+                "link": 103
+              }
+            ],
+            "outputs": [
+              {
+                "localized_name": "VAE",
+                "name": "VAE",
+                "type": "VAE",
+                "links": [
+                  11
+                ]
+              }
+            ],
+            "properties": {
+              "cnr_id": "comfy-core",
+              "ver": "0.3.40",
+              "Node name for S&R": "VAELoader",
+              "enableTabs": false,
+              "tabWidth": 65,
+              "tabXOffset": 10,
+              "hasSecondTab": false,
+              "secondTabText": "Send Back",
+              "secondTabOffset": 80,
+              "secondTabWidth": 65,
+              "models": [
+                {
+                  "name": "qwen_image_vae.safetensors",
+                  "url": "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/vae/qwen_image_vae.safetensors",
+                  "directory": "vae"
+                }
+              ]
+            },
+            "widgets_values": [
+              "qwen_image_vae.safetensors"
+            ]
+          },
+          {
+            "id": 47,
+            "type": "VAEDecode",
+            "pos": [
+              880,
+              840
+            ],
+            "size": [
+              230,
+              90
+            ],
+            "flags": {},
+            "order": 4,
+            "mode": 0,
+            "inputs": [
+              {
                 "localized_name": "samples",
                 "name": "samples",
                 "type": "LATENT",
-                "link": 7
+                "link": 10
               },
               {
                 "localized_name": "vae",
                 "name": "vae",
                 "type": "VAE",
-                "link": 8
+                "link": 11
               }
             ],
             "outputs": [
@@ -914,167 +911,303 @@
                 "type": "IMAGE",
                 "slot_index": 0,
                 "links": [
-                  12
+                  82
                 ]
               }
             ],
             "properties": {
               "cnr_id": "comfy-core",
-              "ver": "0.25.1",
-              "Node name for S&R": "VAEDecode"
+              "ver": "0.3.40",
+              "Node name for S&R": "VAEDecode",
+              "enableTabs": false,
+              "tabWidth": 65,
+              "tabXOffset": 10,
+              "hasSecondTab": false,
+              "secondTabText": "Send Back",
+              "secondTabOffset": 80,
+              "secondTabWidth": 65
             },
             "widgets_values": []
           },
           {
-            "id": 6,
-            "type": "CLIPTextEncode",
+            "id": 28,
+            "type": "EmptyLatentImage",
             "pos": [
-              1008.1983002679107,
-              217.34979666516116
+              -50,
+              830
             ],
             "size": [
-              422.84503173828125,
-              164.31304931640625
-            ],
-            "flags": {
-              "collapsed": true
-            },
-            "order": 1,
-            "mode": 0,
-            "inputs": [
-              {
-                "localized_name": "clip",
-                "name": "clip",
-                "type": "CLIP",
-                "link": 3
-              },
-              {
-                "localized_name": "text",
-                "name": "text",
-                "type": "STRING",
-                "widget": {
-                  "name": "text"
-                },
-                "link": 20
-              }
-            ],
-            "outputs": [
-              {
-                "localized_name": "CONDITIONING",
-                "name": "CONDITIONING",
-                "type": "CONDITIONING",
-                "slot_index": 0,
-                "links": [
-                  4
-                ]
-              }
-            ],
-            "title": "CLIP Positive Prompt",
-            "properties": {
-              "cnr_id": "comfy-core",
-              "ver": "0.25.1",
-              "Node name for S&R": "CLIPTextEncode"
-            },
-            "widgets_values": [
-              "beautiful scenery nature glass bottle landscape, , purple galaxy bottle,"
-            ],
-            "color": "#232",
-            "bgcolor": "#353"
-          },
-          {
-            "id": 7,
-            "type": "CLIPTextEncode",
-            "pos": [
-              1014.7531971851575,
-              359.0602834439531
-            ],
-            "size": [
-              425.27801513671875,
-              180.6060791015625
-            ],
-            "flags": {
-              "collapsed": true
-            },
-            "order": 2,
-            "mode": 0,
-            "inputs": [
-              {
-                "localized_name": "clip",
-                "name": "clip",
-                "type": "CLIP",
-                "link": 5
-              },
-              {
-                "localized_name": "text",
-                "name": "text",
-                "type": "STRING",
-                "widget": {
-                  "name": "text"
-                },
-                "link": 21
-              }
-            ],
-            "outputs": [
-              {
-                "localized_name": "CONDITIONING",
-                "name": "CONDITIONING",
-                "type": "CONDITIONING",
-                "slot_index": 0,
-                "links": [
-                  6
-                ]
-              }
-            ],
-            "title": "CLIP Negative Prompt",
-            "properties": {
-              "cnr_id": "comfy-core",
-              "ver": "0.25.1",
-              "Node name for S&R": "CLIPTextEncode"
-            },
-            "widgets_values": [
-              ""
-            ],
-            "color": "#322",
-            "bgcolor": "#533"
-          },
-          {
-            "id": 3,
-            "type": "KSampler",
-            "pos": [
-              1455.7750800992437,
-              192.2138762251892
-            ],
-            "size": [
-              315,
-              262
+              310,
+              150
             ],
             "flags": {},
             "order": 0,
             "mode": 0,
             "inputs": [
               {
+                "localized_name": "width",
+                "name": "width",
+                "type": "INT",
+                "widget": {
+                  "name": "width"
+                },
+                "link": 96
+              },
+              {
+                "localized_name": "height",
+                "name": "height",
+                "type": "INT",
+                "widget": {
+                  "name": "height"
+                },
+                "link": 97
+              }
+            ],
+            "outputs": [
+              {
+                "localized_name": "LATENT",
+                "name": "LATENT",
+                "type": "LATENT",
+                "links": [
+                  78
+                ]
+              }
+            ],
+            "properties": {
+              "cnr_id": "comfy-core",
+              "ver": "0.3.40",
+              "Node name for S&R": "EmptyLatentImage",
+              "enableTabs": false,
+              "tabWidth": 65,
+              "tabXOffset": 10,
+              "hasSecondTab": false,
+              "secondTabText": "Send Back",
+              "secondTabOffset": 80,
+              "secondTabWidth": 65
+            },
+            "widgets_values": [
+              1024,
+              1024,
+              1
+            ]
+          },
+          {
+            "id": 50,
+            "type": "CLIPTextEncode",
+            "pos": [
+              320,
+              170
+            ],
+            "size": [
+              490,
+              610
+            ],
+            "flags": {},
+            "order": 7,
+            "mode": 0,
+            "inputs": [
+              {
+                "localized_name": "clip",
+                "name": "clip",
+                "type": "CLIP",
+                "link": 80
+              },
+              {
+                "localized_name": "text",
+                "name": "text",
+                "type": "STRING",
+                "widget": {
+                  "name": "text"
+                },
+                "link": 95
+              }
+            ],
+            "outputs": [
+              {
+                "localized_name": "CONDITIONING",
+                "name": "CONDITIONING",
+                "type": "CONDITIONING",
+                "links": [
+                  39
+                ]
+              }
+            ],
+            "title": "CLIP Text Encode (Positive Prompt)",
+            "properties": {
+              "cnr_id": "comfy-core",
+              "ver": "0.3.65",
+              "Node name for S&R": "CLIPTextEncode",
+              "enableTabs": false,
+              "tabWidth": 65,
+              "tabXOffset": 10,
+              "hasSecondTab": false,
+              "secondTabText": "Send Back",
+              "secondTabOffset": 80,
+              "secondTabWidth": 65
+            },
+            "widgets_values": [
+              ""
+            ],
+            "color": "#232",
+            "bgcolor": "#353"
+          },
+          {
+            "id": 44,
+            "type": "UNETLoader",
+            "pos": [
+              -50,
+              170
+            ],
+            "size": [
+              310,
+              130
+            ],
+            "flags": {},
+            "order": 1,
+            "mode": 0,
+            "inputs": [
+              {
+                "localized_name": "unet_name",
+                "name": "unet_name",
+                "type": "COMBO",
+                "widget": {
+                  "name": "unet_name"
+                },
+                "link": 101
+              }
+            ],
+            "outputs": [
+              {
+                "localized_name": "MODEL",
+                "name": "MODEL",
+                "type": "MODEL",
+                "links": [
+                  79
+                ]
+              }
+            ],
+            "properties": {
+              "cnr_id": "comfy-core",
+              "ver": "0.11.0",
+              "Node name for S&R": "UNETLoader",
+              "enableTabs": false,
+              "tabWidth": 65,
+              "tabXOffset": 10,
+              "hasSecondTab": false,
+              "secondTabText": "Send Back",
+              "secondTabOffset": 80,
+              "secondTabWidth": 65,
+              "models": [
+                {
+                  "name": "anima-preview3-base.safetensors",
+                  "url": "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview3-base.safetensors",
+                  "directory": "diffusion_models"
+                }
+              ]
+            },
+            "widgets_values": [
+              "anima-preview3-base.safetensors",
+              "default"
+            ]
+          },
+          {
+            "id": 48,
+            "type": "CLIPTextEncode",
+            "pos": [
+              330,
+              830
+            ],
+            "size": [
+              490,
+              140
+            ],
+            "flags": {},
+            "order": 5,
+            "mode": 0,
+            "inputs": [
+              {
+                "localized_name": "clip",
+                "name": "clip",
+                "type": "CLIP",
+                "link": 81
+              },
+              {
+                "localized_name": "text",
+                "name": "text",
+                "type": "STRING",
+                "widget": {
+                  "name": "text"
+                },
+                "link": 369
+              }
+            ],
+            "outputs": [
+              {
+                "localized_name": "CONDITIONING",
+                "name": "CONDITIONING",
+                "type": "CONDITIONING",
+                "links": [
+                  40
+                ]
+              }
+            ],
+            "title": "CLIP Text Encode (Negative Prompt)",
+            "properties": {
+              "cnr_id": "comfy-core",
+              "ver": "0.3.65",
+              "Node name for S&R": "CLIPTextEncode",
+              "enableTabs": false,
+              "tabWidth": 65,
+              "tabXOffset": 10,
+              "hasSecondTab": false,
+              "secondTabText": "Send Back",
+              "secondTabOffset": 80,
+              "secondTabWidth": 65
+            },
+            "widgets_values": [
+              "nsfw, worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, sepia"
+            ],
+            "color": "#223",
+            "bgcolor": "#335"
+          },
+          {
+            "id": 49,
+            "type": "KSampler",
+            "pos": [
+              870,
+              120
+            ],
+            "size": [
+              300,
+              620
+            ],
+            "flags": {},
+            "order": 6,
+            "mode": 0,
+            "inputs": [
+              {
                 "localized_name": "model",
                 "name": "model",
                 "type": "MODEL",
-                "link": 1
+                "link": 79
               },
               {
                 "localized_name": "positive",
                 "name": "positive",
                 "type": "CONDITIONING",
-                "link": 4
+                "link": 39
               },
               {
                 "localized_name": "negative",
                 "name": "negative",
                 "type": "CONDITIONING",
-                "link": 6
+                "link": 40
               },
               {
                 "localized_name": "latent_image",
                 "name": "latent_image",
                 "type": "LATENT",
-                "link": 2
+                "link": 78
               },
               {
                 "localized_name": "seed",
@@ -1083,7 +1216,7 @@
                 "widget": {
                   "name": "seed"
                 },
-                "link": 29
+                "link": 521
               },
               {
                 "localized_name": "steps",
@@ -1092,7 +1225,7 @@
                 "widget": {
                   "name": "steps"
                 },
-                "link": 30
+                "link": 98
               },
               {
                 "localized_name": "cfg",
@@ -1101,34 +1234,7 @@
                 "widget": {
                   "name": "cfg"
                 },
-                "link": 31
-              },
-              {
-                "localized_name": "sampler_name",
-                "name": "sampler_name",
-                "type": "COMBO",
-                "widget": {
-                  "name": "sampler_name"
-                },
-                "link": 32
-              },
-              {
-                "localized_name": "scheduler",
-                "name": "scheduler",
-                "type": "COMBO",
-                "widget": {
-                  "name": "scheduler"
-                },
-                "link": 33
-              },
-              {
-                "localized_name": "denoise",
-                "name": "denoise",
-                "type": "FLOAT",
-                "widget": {
-                  "name": "denoise"
-                },
-                "link": 34
+                "link": 99
               }
             ],
             "outputs": [
@@ -1138,172 +1244,223 @@
                 "type": "LATENT",
                 "slot_index": 0,
                 "links": [
-                  7,
-                  35
+                  10
                 ]
               }
             ],
             "properties": {
               "cnr_id": "comfy-core",
-              "ver": "0.25.1",
-              "Node name for S&R": "KSampler"
+              "ver": "0.3.40",
+              "Node name for S&R": "KSampler",
+              "enableTabs": false,
+              "tabWidth": 65,
+              "tabXOffset": 10,
+              "hasSecondTab": false,
+              "secondTabText": "Send Back",
+              "secondTabOffset": 80,
+              "secondTabWidth": 65
             },
             "widgets_values": [
-              664627202582789,
+              148500105187572,
               "randomize",
-              20,
-              8,
-              "euler",
-              "normal",
+              30,
+              4,
+              "er_sde",
+              "simple",
               1
             ]
           }
         ],
-        "groups": [],
-        "links": [
-          {
-            "id": 4,
-            "origin_id": 6,
-            "origin_slot": 0,
-            "target_id": 3,
-            "target_slot": 1,
-            "type": "CONDITIONING"
-          },
-          {
-            "id": 6,
-            "origin_id": 7,
-            "origin_slot": 0,
-            "target_id": 3,
-            "target_slot": 2,
-            "type": "CONDITIONING"
-          },
-          {
-            "id": 7,
-            "origin_id": 3,
-            "origin_slot": 0,
-            "target_id": 8,
-            "target_slot": 0,
-            "type": "LATENT"
-          },
+        "groups": [
           {
             "id": 1,
-            "origin_id": -10,
-            "origin_slot": 0,
-            "target_id": 3,
-            "target_slot": 0,
-            "type": "MODEL"
+            "title": "Model",
+            "bounding": [
+              -80,
+              80,
+              360,
+              640
+            ],
+            "color": "#3f789e",
+            "flags": {}
           },
           {
             "id": 2,
-            "origin_id": -10,
-            "origin_slot": 1,
-            "target_id": 3,
-            "target_slot": 3,
+            "title": "Image Size(1MP))",
+            "bounding": [
+              -80,
+              750,
+              360,
+              240
+            ],
+            "color": "#3f789e",
+            "flags": {}
+          },
+          {
+            "id": 3,
+            "title": "Prompt",
+            "bounding": [
+              300,
+              80,
+              530,
+              910
+            ],
+            "color": "#3f789e",
+            "flags": {}
+          }
+        ],
+        "links": [
+          {
+            "id": 10,
+            "origin_id": 49,
+            "origin_slot": 0,
+            "target_id": 47,
+            "target_slot": 0,
             "type": "LATENT"
           },
           {
-            "id": 8,
-            "origin_id": -10,
-            "origin_slot": 2,
-            "target_id": 8,
+            "id": 11,
+            "origin_id": 46,
+            "origin_slot": 0,
+            "target_id": 47,
             "target_slot": 1,
             "type": "VAE"
           },
           {
-            "id": 3,
-            "origin_id": -10,
-            "origin_slot": 3,
-            "target_id": 6,
+            "id": 81,
+            "origin_id": 45,
+            "origin_slot": 0,
+            "target_id": 48,
             "target_slot": 0,
             "type": "CLIP"
           },
           {
-            "id": 5,
-            "origin_id": -10,
-            "origin_slot": 3,
-            "target_id": 7,
+            "id": 79,
+            "origin_id": 44,
+            "origin_slot": 0,
+            "target_id": 49,
+            "target_slot": 0,
+            "type": "MODEL"
+          },
+          {
+            "id": 39,
+            "origin_id": 50,
+            "origin_slot": 0,
+            "target_id": 49,
+            "target_slot": 1,
+            "type": "CONDITIONING"
+          },
+          {
+            "id": 40,
+            "origin_id": 48,
+            "origin_slot": 0,
+            "target_id": 49,
+            "target_slot": 2,
+            "type": "CONDITIONING"
+          },
+          {
+            "id": 78,
+            "origin_id": 28,
+            "origin_slot": 0,
+            "target_id": 49,
+            "target_slot": 3,
+            "type": "LATENT"
+          },
+          {
+            "id": 80,
+            "origin_id": 45,
+            "origin_slot": 0,
+            "target_id": 50,
             "target_slot": 0,
             "type": "CLIP"
           },
           {
-            "id": 20,
-            "origin_id": -10,
-            "origin_slot": 4,
-            "target_id": 6,
-            "target_slot": 1,
-            "type": "STRING"
-          },
-          {
-            "id": 21,
-            "origin_id": -10,
-            "origin_slot": 5,
-            "target_id": 7,
-            "target_slot": 1,
-            "type": "STRING"
-          },
-          {
-            "id": 12,
-            "origin_id": 8,
+            "id": 82,
+            "origin_id": 47,
             "origin_slot": 0,
             "target_id": -20,
             "target_slot": 0,
             "type": "IMAGE"
           },
           {
-            "id": 29,
+            "id": 95,
             "origin_id": -10,
-            "origin_slot": 6,
-            "target_id": 3,
-            "target_slot": 4,
+            "origin_slot": 0,
+            "target_id": 50,
+            "target_slot": 1,
+            "type": "STRING"
+          },
+          {
+            "id": 96,
+            "origin_id": -10,
+            "origin_slot": 1,
+            "target_id": 28,
+            "target_slot": 0,
             "type": "INT"
           },
           {
-            "id": 30,
+            "id": 97,
             "origin_id": -10,
-            "origin_slot": 7,
-            "target_id": 3,
+            "origin_slot": 2,
+            "target_id": 28,
+            "target_slot": 1,
+            "type": "INT"
+          },
+          {
+            "id": 98,
+            "origin_id": -10,
+            "origin_slot": 3,
+            "target_id": 49,
             "target_slot": 5,
             "type": "INT"
           },
           {
-            "id": 31,
+            "id": 99,
             "origin_id": -10,
-            "origin_slot": 8,
-            "target_id": 3,
+            "origin_slot": 4,
+            "target_id": 49,
             "target_slot": 6,
             "type": "FLOAT"
           },
           {
-            "id": 32,
+            "id": 101,
+            "origin_id": -10,
+            "origin_slot": 6,
+            "target_id": 44,
+            "target_slot": 0,
+            "type": "COMBO"
+          },
+          {
+            "id": 102,
+            "origin_id": -10,
+            "origin_slot": 7,
+            "target_id": 45,
+            "target_slot": 0,
+            "type": "COMBO"
+          },
+          {
+            "id": 103,
+            "origin_id": -10,
+            "origin_slot": 8,
+            "target_id": 46,
+            "target_slot": 0,
+            "type": "COMBO"
+          },
+          {
+            "id": 369,
             "origin_id": -10,
             "origin_slot": 9,
-            "target_id": 3,
-            "target_slot": 7,
-            "type": "COMBO"
-          },
-          {
-            "id": 33,
-            "origin_id": -10,
-            "origin_slot": 10,
-            "target_id": 3,
-            "target_slot": 8,
-            "type": "COMBO"
-          },
-          {
-            "id": 34,
-            "origin_id": -10,
-            "origin_slot": 11,
-            "target_id": 3,
-            "target_slot": 9,
-            "type": "FLOAT"
-          },
-          {
-            "id": 35,
-            "origin_id": 3,
-            "origin_slot": 0,
-            "target_id": -20,
+            "target_id": 48,
             "target_slot": 1,
-            "type": "LATENT"
+            "type": "STRING"
+          },
+          {
+            "id": 521,
+            "origin_id": -10,
+            "origin_slot": 5,
+            "target_id": 49,
+            "target_slot": 4,
+            "type": "INT"
           }
         ],
         "extra": {}
@@ -1313,10 +1470,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.42409761837248605,
+      "scale": 0.9090909090909091,
       "offset": [
-        2056.722720510848,
-        945.059808889099
+        300.0315434729294,
+        1015.4435876648963
       ]
     },
     "frontendVersion": "1.45.19"

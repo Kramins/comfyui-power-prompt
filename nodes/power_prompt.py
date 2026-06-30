@@ -76,7 +76,12 @@ class PowerPromptNode:
     def generate(self, yaml_input, var_state, seed, **kwargs):
         var_state_dict = self._parse_var_state(var_state)
         doc, variables, prompt_template, includes = self._load_and_parse_yaml(yaml_input, kwargs)
-        context = self._resolve_all_variables(variables, var_state_dict, seed)
+        input_values = {
+            var_name: str(kwargs[var_name])
+            for var_name, var_def in variables.items()
+            if isinstance(var_def, dict) and var_def.get("type") == "input" and var_name in kwargs
+        }
+        context = self._resolve_all_variables(variables, var_state_dict, seed, input_values)
         return self._render_fragments_and_prompt(doc, includes, context, prompt_template)
 
     # ------------------------------------------------------------------
@@ -170,7 +175,7 @@ class PowerPromptNode:
         return all_opts, tags_by_value
 
     def _resolve_all_variables(
-        self, variables: dict, var_state_dict: dict, seed: int
+        self, variables: dict, var_state_dict: dict, seed: int, input_values: dict | None = None
     ) -> dict:
         """Resolve every variable definition into concrete values and return the Jinja2 context.
 
@@ -194,6 +199,25 @@ class PowerPromptNode:
             if not isinstance(var_def, dict):
                 raise ValueError(f"Variable '{var_name}' definition must be a mapping.")
             var_type = var_def.get("type")
+
+            # Variable-level when/unless: skip the entire variable if the condition fails.
+            _var_when = str(var_def.get("when") or "")
+            _var_unless = str(var_def.get("unless") or "")
+            try:
+                if not _evaluate_when(_var_when, eval_context):
+                    context[var_name] = ""
+                    eval_context[var_name] = ""
+                    eval_context[f"{var_name}_tags"] = []
+                    continue
+                if _var_unless and _evaluate_when(_var_unless, eval_context, field="unless"):
+                    context[var_name] = ""
+                    eval_context[var_name] = ""
+                    eval_context[f"{var_name}_tags"] = []
+                    continue
+            except ValueError as e:
+                raise ValueError(
+                    f"Invalid 'when'/'unless' expression on variable '{var_name}': {e}"
+                ) from e
 
             if var_type in ("select", "choice", "multiselect"):
                 options_raw = var_def.get("options", [])
@@ -296,9 +320,36 @@ class PowerPromptNode:
                 val = str(var_state_dict.get(var_name, ""))
                 context[var_name] = val
                 eval_context[var_name] = val
+                eval_context[f"{var_name}_tags"] = []
+
+            # Input variables receive their value from a connected node socket.
+            elif var_type == "input":
+                val = str((input_values or {}).get(var_name, ""))
+                context[var_name] = val
+                eval_context[var_name] = val
+                eval_context[f"{var_name}_tags"] = []
 
             else:
                 raise ValueError(f"Unknown variable type '{var_type}' for '{var_name}'.")
+
+            # Variable-level tags: added to the global list and per-variable tag list
+            # when the variable resolves to a non-empty value.
+            _var_level_tags_raw = var_def.get("tags") or []
+            if _var_level_tags_raw and context.get(var_name):
+                _var_level_tags = (
+                    [str(t) for t in _var_level_tags_raw]
+                    if isinstance(_var_level_tags_raw, list)
+                    else [str(_var_level_tags_raw)]
+                )
+                if f"{var_name}_tags" not in eval_context:
+                    eval_context[f"{var_name}_tags"] = []
+                _per_var_tags: list = eval_context[f"{var_name}_tags"]
+                for _t in _var_level_tags:
+                    if _t not in _global_tags_seen:
+                        _global_tags_seen.add(_t)
+                        _accumulated_tags.append(_t)
+                    if _t not in _per_var_tags:
+                        _per_var_tags.append(_t)
 
         # Copy per-variable tag lists into the template context so fragments and the
         # prompt can reference e.g. {{ subject_tags }}. Also snapshot the global tags list.

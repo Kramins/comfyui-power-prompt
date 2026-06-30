@@ -13,7 +13,7 @@ class ControlDefinition(BaseModel):
     label: str
     group: Optional[str] = None
     hidden: bool = False
-    widget: Literal["dropdown", "checkboxes", "text"]
+    widget: Literal["dropdown", "checkboxes", "text", "input"]
     options: list[str] = []
     is_any: bool = False
     count_hint: Optional[str] = None
@@ -125,7 +125,17 @@ def build_ui_definition(yaml_input: str, includes: list[str]) -> UIDefinitionRes
             if not isinstance(var_def, dict):
                 continue
             var_type = var_def.get("type")
-            if var_type not in ("select", "choice", "multiselect", "text"):
+            if var_type not in ("select", "choice", "multiselect", "text", "input"):
+                continue
+
+            if var_type == "input":
+                controls.append(ControlDefinition(
+                    name=var_name,
+                    label=_derive_label(var_name, var_def),
+                    group=var_def.get("group") or None,
+                    hidden=bool(var_def.get("hidden", False)),
+                    widget="input",
+                ))
                 continue
 
             options: list[str] = []
