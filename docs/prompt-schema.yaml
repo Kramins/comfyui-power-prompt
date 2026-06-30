@@ -90,8 +90,43 @@ variables:
     # Can be omitted (or set to false) when the variable should be visible.
     hidden: false
 
+    # when  (optional)
+    # A Jinja2 expression evaluated against variables already resolved above this one.
+    # If it evaluates to False the ENTIRE variable is skipped — its value becomes ""
+    # (or [] for multi-pick types), no tags are emitted, and the template context
+    # contains the empty value. Unlike option-level `when` (which filters the option
+    # pool), variable-level `when` decides whether the variable participates at all.
+    #
+    # Shares the same available names and sandbox as option-level `when`.
+    #
+    # Can be omitted when the variable should always be resolved.
+    when: "some_earlier_var == 'expected'"
+
+    # unless  (optional)
+    # The inverse of variable-level `when`. The variable is skipped when this
+    # evaluates to True. Checked after `when`; both can be combined on the same
+    # variable — the variable resolves only if `when` is true AND `unless` is false.
+    #
+    # Can be omitted when no exclusion condition is needed.
+    unless: "some_earlier_var == 'other'"
+
+    # tags  (optional, variable-level)
+    # Type: string OR list of strings.
+    # Emitted into `_accumulated_tags` and `<varname>_tags` whenever this variable
+    # resolves to a non-empty value. Variable-level tags are in addition to any
+    # option-level tags set on individual options. They are NOT emitted when the
+    # variable is skipped by `when`/`unless` or when the resolved value is empty.
+    #
+    # Useful for marking "this variable contributed something" regardless of which
+    # specific option was chosen — e.g. signalling downstream variables that a LoRA
+    # socket is active without knowing its exact value.
+    #
+    # Can be omitted when no downstream variable needs to branch on this variable's
+    # presence as a whole.
+    tags: [variable_level_tag]
+
     # type  (required)
-    # Values: "select" | "text"
+    # Values: "select" | "text" | "input"
     # Aliases: "choice" (= select, count fixed at 1)
     #          "multiselect" (= select, count fixed at "any")
     # Cannot be omitted.
@@ -212,6 +247,31 @@ variables:
     type: text
     # No other fields. count and options are ignored if present.
 
+  # ── type: input ─────────────────────────────────────────────────────────────
+  #
+  # Adds a named input socket to the ComfyUI node (type "*" — accepts any output).
+  # The connected node's output value is passed directly into the Jinja2 template
+  # context under this variable's name, as a string.
+  # If the socket is not connected the variable resolves to "".
+  #
+  # No UI control is rendered in the panel — the socket IS the user interface.
+  # `count` and `options` are not used with type: input.
+  #
+  # Variable-level `when`, `unless`, and `tags` all work with type: input:
+  #   - `when`/`unless` can gate whether the socket value is used at all
+  #   - `tags` are emitted when the socket has a non-empty value
+  #
+  # Example:
+  #   character_lora:
+  #     type: input
+  #     when: "character == 'mage'"   # only use the connected value for mages
+  #     tags: [lora_active]           # downstream vars can check 'lora_active' in tags
+
+  example_input:
+    type: input
+    # Optional: when, unless, tags (see variable-level fields above).
+    # No other fields. count and options are not used.
+
 
 # ── prompt ────────────────────────────────────────────────────────────────────
 #
@@ -268,35 +328,43 @@ fragments:
 # Field summary
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# ┌─────────────────────┬──────────────────────┬─────────────┬────────────────────────────────────────────┐
-# │ Field               │ Type                 │ Default     │ Can omit when…                             │
-# ├─────────────────────┼──────────────────────┼─────────────┼────────────────────────────────────────────┤
-# │ includes            │ list of strings      │ []          │ All partials are wired via graph connections│
-# │ variables           │ mapping              │ —           │ Never (required)                           │
-# │ prompt              │ string               │ —           │ Never (required)                           │
-# │ fragments           │ mapping              │ {}          │ No composed sub-templates needed           │
-# ├─────────────────────┼──────────────────────┼─────────────┼────────────────────────────────────────────┤
-# │ <var>.type          │ "select" | "text"    │ —           │ Never (required)                           │
-# │ <var>.label         │ string               │ (key name)  │ Key name is readable enough                │
-# │ <var>.group         │ string               │ (none)      │ No grouping needed                         │
-# │ <var>.hidden        │ bool                 │ false       │ Variable should be visible (default)       │
-# │ <var>.count         │ int | range | "any"  │ 1           │ You want exactly one option picked         │
-# │ <var>.options       │ list                 │ —           │ Never for select (required); N/A for text  │
-# ├─────────────────────┼──────────────────────┼─────────────┼────────────────────────────────────────────┤
-# │ <option>.value      │ string | list        │ —           │ Using shorthand plain-string form          │
-# │ <option>.weight     │ float                │ 1.0         │ Equal probability is fine                  │
-# │ <option>.when       │ Jinja2 expression    │ (always on) │ Option is always available                 │
-# │ <option>.unless     │ Jinja2 expression    │ (never off) │ No exclusion condition needed              │
-# │ <option>.tags       │ string | list        │ []          │ No downstream variable checks these tags   │
-# └─────────────────────┴──────────────────────┴─────────────┴────────────────────────────────────────────┘
+# ┌─────────────────────┬──────────────────────────────┬─────────────┬──────────────────────────────────────────────────┐
+# │ Field               │ Type                         │ Default     │ Can omit when…                                   │
+# ├─────────────────────┼──────────────────────────────┼─────────────┼──────────────────────────────────────────────────┤
+# │ includes            │ list of strings              │ []          │ All partials are wired via graph connections      │
+# │ variables           │ mapping                      │ —           │ Never (required)                                 │
+# │ prompt              │ string                       │ —           │ Never (required)                                 │
+# │ fragments           │ mapping                      │ {}          │ No composed sub-templates needed                 │
+# ├─────────────────────┼──────────────────────────────┼─────────────┼──────────────────────────────────────────────────┤
+# │ <var>.type          │ "select"|"text"|"input"      │ —           │ Never (required)                                 │
+# │ <var>.label         │ string                       │ (key name)  │ Key name is readable enough                      │
+# │ <var>.group         │ string                       │ (none)      │ No grouping needed                               │
+# │ <var>.hidden        │ bool                         │ false       │ Variable should be visible (default)             │
+# │ <var>.when          │ Jinja2 expression            │ (always on) │ Variable should always resolve                   │
+# │ <var>.unless        │ Jinja2 expression            │ (never off) │ No variable-level exclusion condition needed     │
+# │ <var>.tags          │ string | list                │ []          │ No downstream var needs to know this var fired   │
+# │ <var>.count         │ int | range | "any"          │ 1           │ You want exactly one option picked (select only) │
+# │ <var>.options       │ list                         │ —           │ Never for select (required); N/A for text/input  │
+# ├─────────────────────┼──────────────────────────────┼─────────────┼──────────────────────────────────────────────────┤
+# │ <option>.value      │ string | list                │ —           │ Using shorthand plain-string form                │
+# │ <option>.weight     │ float                        │ 1.0         │ Equal probability is fine                        │
+# │ <option>.when       │ Jinja2 expression            │ (always on) │ Option is always available                       │
+# │ <option>.unless     │ Jinja2 expression            │ (never off) │ No exclusion condition needed                    │
+# │ <option>.tags       │ string | list                │ []          │ No downstream variable checks these tags         │
+# └─────────────────────┴──────────────────────────────┴─────────────┴──────────────────────────────────────────────────┘
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # Ordering rules
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# Variables are evaluated top-to-bottom. A `when` expression on an option can
-# only reference variables declared ABOVE it in the `variables` block.
-# Referencing a variable that hasn't been resolved yet raises an error.
+# Variables are evaluated top-to-bottom. Both variable-level and option-level
+# `when`/`unless` expressions can only reference variables declared ABOVE them
+# in the `variables` block. Referencing a variable that hasn't been resolved
+# yet raises an error.
+#
+# A variable skipped by variable-level `when`/`unless` still writes "" into
+# the context, so subsequent variables can safely reference it (e.g. check
+# `skipped_var == ""`). Variable-level tags are NOT emitted when skipped.
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # `when` / `unless` expression context

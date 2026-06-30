@@ -8,11 +8,13 @@ A ComfyUI node for building rich, dynamic prompts from a simple YAML definition.
 
 ## Features
 
-- **Variables** — define named `select` or `text` variables and reference them in a Jinja2 prompt template
+- **Variables** — define named `select`, `text`, or `input` variables and reference them in a Jinja2 prompt template
 - **Weighted options** — give options a `weight` to control how often they're randomly chosen
 - **Count ranges** — pick exactly N, a random range (`1-3`), or any number (`any`) of options
-- **`when` / `unless` expressions** — Jinja2 expressions that control which options are available; `when` includes an option when true, `unless` excludes it when true
-- **Tags** — attach semantic labels to options; downstream `when`/`unless` expressions can check `style_tags`, `season_tags`, etc.
+- **Option-level `when` / `unless`** — Jinja2 expressions that control which options are available for a given generation
+- **Variable-level `when` / `unless`** — skip an entire variable (resolve it to empty) when a condition fails; works on all variable types including `input`
+- **Option-level tags** — attach semantic labels to specific option values; downstream `when`/`unless` expressions can check `style_tags`, `season_tags`, etc.
+- **Variable-level tags** — tags scoped to the variable itself, emitted for any resolved value; option-level tags are an inner scope emitted only for the specific value chosen
 - **Multi-value options** — a single option entry can expand to multiple values sharing the same weight, tags, and `when`/`unless`
 - **UI controls** — `label:` sets a custom display name, `group:` organises variables into named sections, `hidden:` hides a variable from the UI while still resolving it
 - **Prompt fragments** — define a `fragments:` mapping of named Jinja2 sub-templates rendered after variables resolve; reference them as `{{ fragment.name }}` in any prompt
@@ -72,8 +74,11 @@ Each entry under `variables:` becomes a UI control and a template variable.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `type` | `select` \| `text` | — | **Required.** `select` picks from a list; `text` is a free-text input. Aliases: `choice` (= select, count 1), `multiselect` (= select, count any) |
-| `count` | int \| range \| `any` | `1` | How many options to pick. `1` = single dropdown; `0-3` = random range; `any` = user checks all they want |
+| `type` | `select` \| `text` \| `input` | — | **Required.** `select` picks from a list; `text` is a free-text input; `input` creates a node socket. Aliases: `choice` (= select, count 1), `multiselect` (= select, count any) |
+| `when` | Jinja2 expression | (always resolves) | Skip the entire variable when this evaluates to `false` — the value becomes `""` and no tags are emitted. References variables declared above this one |
+| `unless` | Jinja2 expression | (never skipped) | Skip the entire variable when this evaluates to `true`. Checked after `when`; both can be combined |
+| `tags` | string \| list | `[]` | Tags emitted whenever this variable resolves to a non-empty value, regardless of which option was chosen. Added to `<varname>_tags` and the global `tags` list |
+| `count` | int \| range \| `any` | `1` | How many options to pick (`select` only). `1` = single dropdown; `0-3` = random range; `any` = user checks all they want |
 | `options` | list | — | Required for `select`. The pool of values to choose from |
 | `label` | string | key name | Custom display name shown in the UI panel. Underscores in the key name are replaced with spaces when no label is set |
 | `group` | string | — | Groups this variable under a named section header in the UI. All variables sharing the same string are rendered together, before ungrouped variables |
@@ -119,6 +124,75 @@ variables:
   notes:
     type: text
     label: "Extra notes"   # shown in the UI as "Extra notes" instead of "notes"
+```
+
+#### `type: input`
+
+Adds a named input socket to the ComfyUI node (accepts any output type). The connected node's value is passed as a string into the template. If nothing is connected the variable resolves to `""`.
+
+No UI control is rendered in the panel — the socket is the interface. Variable-level `when`, `unless`, and `tags` all work normally:
+
+```yaml
+variables:
+  character:
+    type: select
+    count: 1
+    options: [warrior, mage]
+
+  character_lora:
+    type: input
+    when: "character == 'mage'"   # only use the socket value when relevant
+    tags: [lora_active]           # downstream vars can check 'lora_active' in tags
+
+prompt: |
+  {{ character }},
+  {% if character_lora %}{{ character_lora }},{% endif %}
+  masterpiece
+```
+
+#### Variable-level `when`, `unless`, and `tags`
+
+These fields apply to the variable as a whole, not to individual options. They work on every type — `select`, `text`, and `input`.
+
+**`when` / `unless`** — skip the entire variable when the condition fails. The resolved value becomes `""` (or `[]` for multi-pick), no tags are emitted, and subsequent variables can still reference it safely:
+
+```yaml
+variables:
+  season:
+    type: select
+    count: 1
+    options: [winter, summer]
+
+  winter_mood:
+    type: select
+    count: 1
+    when: "season == 'winter'"   # whole variable skipped unless it's winter
+    options: [cozy, frosty, serene]
+```
+
+**`tags`** — emitted to the global `tags` list and `<varname>_tags` whenever the variable resolves to any non-empty value. Combined with option-level tags, not instead of them:
+
+```yaml
+variables:
+  style:
+    type: select
+    count: 1
+    tags: [has_style]           # always added when style resolves non-empty
+    options:
+      - value: anime
+        tags: [japanese]        # added only when anime is chosen
+      - value: watercolor
+        tags: [traditional]
+
+  artist:
+    type: select
+    count: 1
+    options:
+      - value: generic artist
+      - value: Makoto Shinkai
+        when: "'japanese' in style_tags"
+      - value: special artist
+        when: "'has_style' in tags"   # gates on variable-level tag
 ```
 
 #### `label`, `group`, and `hidden`
@@ -187,6 +261,10 @@ options:
 ### `when` and `unless` expressions
 
 Expressions are evaluated using the **Jinja2 sandbox** — attribute access on unsafe objects is blocked. Variables resolved above the current one in the YAML are available by name.
+
+`when` and `unless` can appear at two levels:
+- **Option level** — filters which options are included in the random pool for that generation
+- **Variable level** — skips the entire variable (value becomes `""`, no tags emitted) when the condition fails
 
 ```yaml
 when: "season == 'winter'"

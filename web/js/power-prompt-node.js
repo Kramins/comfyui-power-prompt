@@ -32,6 +32,7 @@ prompt: |
   {% if mood %}{{ mood }},{% endif %}
   masterpiece, best quality
 `;
+var RESERVED_INPUT_NAMES = /* @__PURE__ */ new Set(["yaml_input", "var_state", "seed"]);
 var DEFAULT_PARTIAL_YAML = `variables:
   hair_color:
     type: select
@@ -433,18 +434,44 @@ function notifyConnectedMainNodes(partialNode) {
     target?.onConnectionsChange?.(1, link.target_slot, true, link, null);
   }
 }
-function ensureIncludeSlots(node) {
-  const inputs = node.inputs ?? [];
-  const includeIndices = [];
-  for (let i = 0; i < inputs.length; i++) {
-    if (inputs[i].name.startsWith("include_")) includeIndices.push(i);
-  }
-  while (includeIndices.length > 1 && inputs[includeIndices.at(-1)].link == null) {
-    node.removeInput(includeIndices.pop());
-  }
-  const currentIncludes = (node.inputs ?? []).filter((i) => i.name.startsWith("include_"));
-  if (currentIncludes.length === 0 || currentIncludes.at(-1).link != null) {
-    node.addInput(`include_${currentIncludes.length + 1}`, "POWER_PROMPT_PARTIAL");
+function buildInputSockets(node, inputVarNames) {
+  if (node._ppRebuilding) return;
+  node._ppRebuilding = true;
+  try {
+    const savedConnections = /* @__PURE__ */ new Map();
+    for (const inp of node.inputs ?? []) {
+      if (inp.link == null) continue;
+      if (inp.type !== "*" && !inp.name.startsWith("include_")) continue;
+      const link = app.graph.links[inp.link];
+      if (link) savedConnections.set(inp.name, { originId: link.origin_id, originSlot: link.origin_slot });
+    }
+    const connectedIncludes = (node.inputs ?? []).filter((i) => i.name.startsWith("include_") && i.link != null).map((i) => i.name);
+    const desiredVars = (inputVarNames ?? []).filter(
+      (n) => !RESERVED_INPUT_NAMES.has(n) && !n.startsWith("include_")
+    );
+    const inputs = node.inputs ?? [];
+    for (let i = inputs.length - 1; i >= 0; i--) {
+      if (inputs[i].type === "*" || inputs[i].name.startsWith("include_")) {
+        node.removeInput(i);
+      }
+    }
+    for (const name of connectedIncludes) {
+      node.addInput(name, "POWER_PROMPT_PARTIAL");
+    }
+    for (const name of desiredVars) {
+      node.addInput(name, "*");
+    }
+    node.addInput(`include_${connectedIncludes.length + 1}`, "POWER_PROMPT_PARTIAL");
+    for (const inp of node.inputs ?? []) {
+      const conn = savedConnections.get(inp.name);
+      if (!conn) continue;
+      const slot = (node.inputs ?? []).indexOf(inp);
+      const originNode = app.graph.getNodeById(conn.originId);
+      originNode?.connect(conn.originSlot, node, slot);
+    }
+    app.graph.setDirtyCanvas?.(true, true);
+  } finally {
+    node._ppRebuilding = false;
   }
 }
 
@@ -828,9 +855,11 @@ function setupPowerPromptPanel(node) {
   }
   const origOnConnectionsChange = node.onConnectionsChange?.bind(node);
   node.onConnectionsChange = function(type, slotIndex, connected, link, ioSlot) {
+    if (node._ppRebuilding) return;
     origOnConnectionsChange?.call(this, type, slotIndex, connected, link, ioSlot);
     updateConnectionState();
-    ensureIncludeSlots(node);
+    const currentVarNames = (node.inputs ?? []).filter((i) => i.type === "*").map((i) => i.name);
+    buildInputSockets(node, currentVarNames);
     scheduleRebuild();
   };
   const origOnConfigure = node.onConfigure?.bind(node);
@@ -838,10 +867,11 @@ function setupPowerPromptPanel(node) {
     origOnConfigure?.(data);
     if (yamlCanvasWidget) jar.updateCode(yamlCanvasWidget.value ?? DEFAULT_YAML);
     updateConnectionState();
-    ensureIncludeSlots(node);
+    const currentVarNames = (node.inputs ?? []).filter((i) => i.type === "*").map((i) => i.name);
+    buildInputSockets(node, currentVarNames);
   };
   updateConnectionState();
-  ensureIncludeSlots(node);
+  buildInputSockets(node, []);
   rebuildVarControls(varsSection, jar.toString(), {}, node);
 }
 async function rebuildVarControls(varsSection, yamlText, currentVars, node) {
@@ -853,9 +883,12 @@ async function rebuildVarControls(varsSection, yamlText, currentVars, node) {
   if (!def || def.error) {
     console.warn("[PowerPrompt] ui_definition:", def?.error ?? "fetch failed");
   }
+  const inputVarNames = controls.filter((c) => c.widget === "input").map((c) => c.name);
+  buildInputSockets(node, inputVarNames);
+  const renderableControls = controls.filter((c) => c.widget !== "input");
   const groupMap = /* @__PURE__ */ new Map();
   const ungrouped = [];
-  for (const ctrl of controls) {
+  for (const ctrl of renderableControls) {
     if (ctrl.group) {
       if (!groupMap.has(ctrl.group)) groupMap.set(ctrl.group, []);
       groupMap.get(ctrl.group).push(ctrl);

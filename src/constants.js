@@ -27,6 +27,8 @@ prompt: |
   masterpiece, best quality
 `;
 
+export const RESERVED_INPUT_NAMES = new Set(["yaml_input", "var_state", "seed"]);
+
 export const DEFAULT_PARTIAL_YAML = `variables:
   hair_color:
     type: select

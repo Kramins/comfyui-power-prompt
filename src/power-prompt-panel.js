@@ -3,7 +3,7 @@ import { YAML_MIN_HEIGHT, CHIP_THRESHOLD, DEFAULT_YAML } from "./constants.js";
 import { injectStyles } from "./styles.js";
 import { createYamlEditor } from "./yaml-editor.js";
 import { fetchUIDefinition } from "./api.js";
-import { getIncludeRawStrings, ensureIncludeSlots } from "./node-utils.js";
+import { getIncludeRawStrings, buildInputSockets } from "./node-utils.js";
 import {
     getVarState, createGroupHeader, createVarRow,
     updateSelectOptions, updateCheckboxes,
@@ -142,9 +142,11 @@ export function setupPowerPromptPanel(node) {
 
     const origOnConnectionsChange = node.onConnectionsChange?.bind(node);
     node.onConnectionsChange = function (type, slotIndex, connected, link, ioSlot) {
+        if (node._ppRebuilding) return;
         origOnConnectionsChange?.call(this, type, slotIndex, connected, link, ioSlot);
         updateConnectionState();
-        ensureIncludeSlots(node);
+        const currentVarNames = (node.inputs ?? []).filter(i => i.type === "*").map(i => i.name);
+        buildInputSockets(node, currentVarNames);
         scheduleRebuild();
     };
 
@@ -153,7 +155,8 @@ export function setupPowerPromptPanel(node) {
         origOnConfigure?.(data);
         if (yamlCanvasWidget) jar.updateCode(yamlCanvasWidget.value ?? DEFAULT_YAML);
         updateConnectionState();
-        ensureIncludeSlots(node);
+        const currentVarNames = (node.inputs ?? []).filter(i => i.type === "*").map(i => i.name);
+        buildInputSockets(node, currentVarNames);
         // Do NOT call rebuildVarControls here. ComfyUI sets widget values before firing
         // onConfigure, so setValue() has already queued a rebuild with the saved vars.
         // Calling rebuildVarControls here with getVarState (which reads an empty DOM) would
@@ -161,7 +164,7 @@ export function setupPowerPromptPanel(node) {
     };
 
     updateConnectionState();
-    ensureIncludeSlots(node);
+    buildInputSockets(node, []);
     rebuildVarControls(varsSection, jar.toString(), {}, node);
 }
 
@@ -181,10 +184,17 @@ async function rebuildVarControls(varsSection, yamlText, currentVars, node) {
         console.warn("[PowerPrompt] ui_definition:", def?.error ?? "fetch failed");
     }
 
+    // Sync input-variable sockets before touching the DOM
+    const inputVarNames = controls.filter(c => c.widget === "input").map(c => c.name);
+    buildInputSockets(node, inputVarNames);
+
+    // Only renderable (non-socket) controls get DOM rows
+    const renderableControls = controls.filter(c => c.widget !== "input");
+
     // Split into groups (insertion-ordered Map) and ungrouped; groups render first.
     const groupMap = new Map();
     const ungrouped = [];
-    for (const ctrl of controls) {
+    for (const ctrl of renderableControls) {
         if (ctrl.group) {
             if (!groupMap.has(ctrl.group)) groupMap.set(ctrl.group, []);
             groupMap.get(ctrl.group).push(ctrl);

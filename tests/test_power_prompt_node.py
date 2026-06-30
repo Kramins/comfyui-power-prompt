@@ -2685,3 +2685,342 @@ class TestUIDefinition:
         resp = build_ui_definition(yaml_input, [])
         ctrl = next(c for c in resp.controls if c.name == "x")
         assert ctrl.count_hint == "2"
+
+    # --- input widget type ---
+
+    def test_input_type_is_input_widget(self):
+        yaml_input = "variables:\n  lora:\n    type: input\nprompt: '{{ lora }}'\n"
+        resp = build_ui_definition(yaml_input, [])
+        ctrl = next(c for c in resp.controls if c.name == "lora")
+        assert ctrl.widget == "input"
+        assert ctrl.options == []
+
+
+# ---------------------------------------------------------------------------
+# Variable-level when / unless
+# ---------------------------------------------------------------------------
+
+
+class TestVariableLevelWhen:
+    def test_when_true_variable_resolved(self):
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [yes]
+  note:
+    type: text
+    when: "flag == 'yes'"
+prompt: |
+  {{ flag }},{{ note }}
+"""
+        prompt, _ = generate(yaml, {"flag": "yes", "note": "ok"})
+        assert "ok" in prompt
+
+    def test_when_false_variable_empty(self):
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [no]
+  note:
+    type: text
+    when: "flag == 'yes'"
+prompt: |
+  {{ flag }},{{ note }}
+"""
+        prompt, _ = generate(yaml, {"flag": "no", "note": "ok"})
+        assert "ok" not in prompt
+        assert prompt.endswith("no")
+
+    def test_unless_true_variable_skipped(self):
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [yes]
+  note:
+    type: text
+    unless: "flag == 'yes'"
+prompt: |
+  {{ flag }},{{ note }}
+"""
+        prompt, _ = generate(yaml, {"flag": "yes", "note": "ok"})
+        assert "ok" not in prompt
+
+    def test_unless_false_variable_resolved(self):
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [no]
+  note:
+    type: text
+    unless: "flag == 'yes'"
+prompt: |
+  {{ flag }},{{ note }}
+"""
+        prompt, _ = generate(yaml, {"flag": "no", "note": "ok"})
+        assert "ok" in prompt
+
+    def test_when_false_on_select_skips_entire_variable(self):
+        # Whole select is skipped — no random pick either
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [no]
+  style:
+    type: select
+    count: 1
+    when: "flag == 'yes'"
+    options: [anime, realistic]
+prompt: |
+  {{ flag }},{{ style }}
+"""
+        for seed in range(10):
+            prompt, _ = generate(yaml, {"flag": "no"}, seed=seed)
+            assert "anime" not in prompt
+            assert "realistic" not in prompt
+
+    def test_skipped_variable_resolves_empty_for_downstream(self):
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [no]
+  a:
+    type: text
+    when: "flag == 'yes'"
+  b:
+    type: text
+    when: "a == ''"
+prompt: |
+  {{ b }}
+"""
+        prompt, _ = generate(yaml, {"flag": "no", "b": "downstream_ok"})
+        assert prompt == "downstream_ok"
+
+    def test_when_error_raises_with_variable_context(self):
+        yaml = """\
+variables:
+  x:
+    type: text
+    when: "invalid >>>"
+prompt: |
+  {{ x }}
+"""
+        with pytest.raises(ValueError, match="variable 'x'"):
+            generate(yaml)
+
+    def test_when_on_input_variable(self):
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [yes]
+  lora:
+    type: input
+    when: "flag == 'yes'"
+prompt: |
+  {{ lora }}
+"""
+        node = PowerPromptNode()
+        prompt, _ = node.generate(
+            yaml_input=yaml, var_state='{"flag": "yes"}', seed=0, lora="my_lora.safetensors"
+        )
+        assert "my_lora.safetensors" in prompt
+
+    def test_when_false_on_input_variable_gives_empty(self):
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [no]
+  lora:
+    type: input
+    when: "flag == 'yes'"
+prompt: |
+  {{ lora }}
+"""
+        node = PowerPromptNode()
+        prompt, _ = node.generate(
+            yaml_input=yaml, var_state='{"flag": "no"}', seed=0, lora="my_lora.safetensors"
+        )
+        assert "my_lora.safetensors" not in prompt
+
+
+# ---------------------------------------------------------------------------
+# Variable-level tags
+# ---------------------------------------------------------------------------
+
+
+class TestVariableLevelTags:
+    def test_tags_added_to_global_when_non_empty(self):
+        yaml = """\
+variables:
+  lora:
+    type: text
+    tags: [lora_active]
+  note:
+    type: text
+    when: "'lora_active' in tags"
+prompt: |
+  {{ note }}
+"""
+        prompt, _ = generate(yaml, {"lora": "some_lora", "note": "yes"})
+        assert prompt == "yes"
+
+    def test_tags_not_added_when_empty(self):
+        yaml = """\
+variables:
+  lora:
+    type: text
+    tags: [lora_active]
+  note:
+    type: text
+    when: "'lora_active' in tags"
+prompt: |
+  {{ note }}
+"""
+        prompt, _ = generate(yaml, {"lora": "", "note": "yes"})
+        assert "yes" not in prompt
+
+    def test_tags_not_added_when_variable_skipped_by_when(self):
+        yaml = """\
+variables:
+  flag:
+    type: select
+    count: 1
+    options: [no]
+  lora:
+    type: text
+    when: "flag == 'yes'"
+    tags: [lora_active]
+  note:
+    type: text
+    when: "'lora_active' in tags"
+prompt: |
+  {{ note }}
+"""
+        prompt, _ = generate(yaml, {"flag": "no", "lora": "x", "note": "yes"})
+        assert "yes" not in prompt
+
+    def test_per_variable_tags_accessible_as_var_tags(self):
+        yaml = """\
+variables:
+  lora:
+    type: text
+    tags: [lora_applied]
+prompt: |
+  {{ lora_tags }}
+"""
+        prompt, _ = generate(yaml, {"lora": "x"})
+        assert "lora_applied" in prompt
+
+    def test_per_variable_tags_empty_when_value_empty(self):
+        yaml = """\
+variables:
+  lora:
+    type: text
+    tags: [lora_applied]
+prompt: |
+  {{ lora_tags }}
+"""
+        prompt, _ = generate(yaml, {"lora": ""})
+        assert "lora_applied" not in prompt
+
+    def test_variable_level_tags_combine_with_option_tags(self):
+        yaml = """\
+variables:
+  style:
+    type: select
+    count: 1
+    tags: [has_style]
+    options:
+      - value: anime
+        tags: [japanese]
+  note:
+    type: text
+    when: "'has_style' in tags and 'japanese' in tags"
+prompt: |
+  {{ note }}
+"""
+        prompt, _ = generate(yaml, {"style": "anime", "note": "ok"})
+        assert prompt == "ok"
+
+    def test_variable_level_tags_on_input_type(self):
+        yaml = """\
+variables:
+  lora:
+    type: input
+    tags: [lora_active]
+  note:
+    type: text
+    when: "'lora_active' in tags"
+prompt: |
+  {{ note }}
+"""
+        node = PowerPromptNode()
+        prompt, _ = node.generate(
+            yaml_input=yaml, var_state='{"note": "yes"}', seed=0, lora="some.safetensors"
+        )
+        assert prompt == "yes"
+
+    def test_variable_level_tags_on_input_type_empty_socket(self):
+        yaml = """\
+variables:
+  lora:
+    type: input
+    tags: [lora_active]
+  note:
+    type: text
+    when: "'lora_active' in tags"
+prompt: |
+  {{ note }}
+"""
+        node = PowerPromptNode()
+        # No lora kwarg — socket not connected, resolves to ""
+        prompt, _ = node.generate(
+            yaml_input=yaml, var_state='{"note": "yes"}', seed=0
+        )
+        assert "yes" not in prompt
+
+    def test_scalar_tags_normalised_to_list(self):
+        yaml = """\
+variables:
+  lora:
+    type: text
+    tags: lora_active
+  note:
+    type: text
+    when: "'lora_active' in tags"
+prompt: |
+  {{ note }}
+"""
+        prompt, _ = generate(yaml, {"lora": "x", "note": "ok"})
+        assert prompt == "ok"
+
+    def test_variable_level_tags_deduped_in_global_list(self):
+        # Same tag from two variables should appear only once in {{ tags }}
+        yaml = """\
+variables:
+  a:
+    type: text
+    tags: [shared]
+  b:
+    type: text
+    tags: [shared]
+prompt: |
+  {{ tags | join(',') }}
+"""
+        prompt, _ = generate(yaml, {"a": "x", "b": "y"})
+        assert prompt.count("shared") == 1
